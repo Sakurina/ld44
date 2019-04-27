@@ -2,6 +2,7 @@ lume = require "deps/lume"
 lovebird = require "deps/lovebird"
 Object = require "deps/classic"
 json = require "deps/json"
+require('deps/camera')
 require("helpers")
 require("layer")
 require("layermanager")
@@ -10,6 +11,7 @@ require("layer_controls_overlay")
 require("layer_controls")
 require("layer_menu")
 require("layer_srpg")
+require("constants")
 
 function love.load()
     layer_manager = LayerManager()
