@@ -24,6 +24,8 @@ function SRPGLayer:new()
 
     -- selection mode stuff
     self.allowed_tiles = {}
+    self.selected_unit = nil
+    self.target_unit = nil
 
     -- units and animations
     self.units = {}
@@ -84,6 +86,12 @@ function SRPGLayer:draw()
 end
 
 function SRPGLayer:update(dt)
+    if self.active_mode == 'animation_wait' then
+        if self.selected_unit ~= nil and self.selected_unit.processing_move_queue == false then
+            self.active_mode = 'overview'
+            self.selected_unit = nil
+        end
+    end
     local window_width = love.graphics.getWidth()
     local window_height = love.graphics.getHeight()
     local cursor_x = x_for_tile(self.cursor_tile_x)
@@ -140,8 +148,12 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
             local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
             if #units > 0 then
                 self.active_mode = 'selection'
+                self.selected_unit = units[1]
                 self.allowed_tiles = units[1]:raw_allowed_tiles()
             end
+        elseif self.active_mode == 'selection' then
+            self.active_mode = 'animation_wait'
+            self.selected_unit.processing_move_queue = true
         end
     elseif key == '1' then
         lume.each(self.units, function(u) u.active_animation = 'walk_animation' end)
@@ -151,14 +163,19 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         lume.each(self.units, function(u) u.active_animation = 'damage_animation' end)
     end
 
+    self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
+    self.cursor_tile_target_y = lume.clamp(self.cursor_tile_target_y, 0, self.tile_height_count - 1)
+
     if self.active_mode == 'selection' then
         if lume.any(self.allowed_tiles, function(t) return t.x == self.cursor_tile_target_x and t.y == self.cursor_tile_target_y end) == false then
             self.cursor_tile_target_x = self.cursor_tile_x
             self.cursor_tile_target_y = self.cursor_tile_y
         end
+        if self.selected_unit ~= nil and (self.cursor_tile_x ~= self.cursor_tile_target_x or self.cursor_tile_y ~= self.cursor_tile_target_y) then
+            self.selected_unit:queue_move(self.cursor_tile_target_x, self.cursor_tile_target_y)
+        end
     end
-    self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
-    self.cursor_tile_target_y = lume.clamp(self.cursor_tile_target_y, 0, self.tile_height_count - 1)
+    
 end
 
 function SRPGLayer:keyreleased(key, scancode)

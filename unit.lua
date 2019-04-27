@@ -18,6 +18,7 @@ function Unit:new(tile_x, tile_y)
     self.pixel_y = constants.pixel_tile_height * constants.pixel_integer_scale * self.tile_y
     self.tile_move_accumulator = 0
     self.move_queue = {}
+    self.processing_move_queue = false
     self.moved_this_turn = false
     -- Combat math
     self.hp = 0
@@ -31,10 +32,14 @@ function Unit:update(dt)
         self.tile_move_accumulator = self.tile_move_accumulator + dt
     end
     if self.tile_move_accumulator > constants.unit_move_speed then
-        self.tile_target_x = self.tile_x
-        self.tile_target_y = self.tile_y
+        self.tile_x = self.tile_target_x
+        self.tile_y = self.tile_target_y
         self.tile_move_accumulator = 0
     end
+    if self.processing_move_queue == true then
+        self:process_move_queue()
+    end
+
     local offset_x = (constants.pixel_sprite_width - constants.pixel_tile_width) * 0.5 * constants.pixel_integer_scale;
     local offset_y = (constants.pixel_sprite_height - constants.pixel_tile_width) * 0.5 * constants.pixel_integer_scale;
     if self.active_animation == 'walk_animation' and self[self.active_animation].position == 2 then
@@ -54,8 +59,22 @@ function Unit:draw()
     self[self.active_animation]:draw(self.sprite_sheet, self.pixel_x, self.pixel_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
 end
 
-function Unit:process_move_queue()
+function Unit:queue_move(x, y)
+    table.insert(self.move_queue, { x = x, y = y })
+    log(lume.format("[{1}] {2}", { self.unit_name, lume.serialize(self.move_queue) }))
+end
 
+function Unit:process_move_queue()
+    if self.tile_x == self.tile_target_x and self.tile_y == self.tile_target_y then
+        if #(self.move_queue) > 0 then
+            local first = self.move_queue[1]
+            self.tile_target_x = first.x
+            self.tile_target_y = first.y
+            lume.remove(self.move_queue, first)
+        else
+            self.processing_move_queue = false
+        end
+    end
 end
 
 function Unit:raw_allowed_tiles()
