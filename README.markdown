@@ -7,6 +7,7 @@ This is an as of yet unnamed [Ludum Dare 44][ld] game by [Sakurina][skrn] and [w
 ## Tools used
 
 * [LÖVE][love], a Lua-based multiplatform 2D game framework.
+* [anim8][anim8] for sprite animations.
 * [Lovebird][lovebird] for sane debugging.
 * [Lume][lume] for lots of useful helper functions.
 * [classic][classic] for easy class creation.
@@ -18,6 +19,7 @@ The usual license boilerplate can be found in *LICENSE.markdown*.
 [skrn]: https://twitter.com/Sakurina
 [woof]: https://twitter.com/woofycakes
 [love]: http://love2d.org
+[anim8]: https://github.com/kikito/anim8
 [lume]: https://github.com/rxi/lume/
 [lovebird]: https://github.com/rxi/lovebird
 [classic]: https://github.com/rxi/classic

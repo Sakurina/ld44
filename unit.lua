@@ -37,6 +37,9 @@ function Unit:update(dt)
     end
     local offset_x = (constants.pixel_sprite_width - constants.pixel_tile_width) * 0.5 * constants.pixel_integer_scale;
     local offset_y = (constants.pixel_sprite_height - constants.pixel_tile_width) * 0.5 * constants.pixel_integer_scale;
+    if self.active_animation == 'walk_animation' and self[self.active_animation].position == 2 then
+        offset_y = offset_y + constants.pixel_integer_scale
+    end
     local pixel_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.tile_x - offset_x
     local pixel_y = constants.pixel_tile_height * constants.pixel_integer_scale * self.tile_y - offset_y
     local pixel_proj_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.tile_target_x - offset_x
@@ -55,10 +58,21 @@ function Unit:process_move_queue()
 
 end
 
-function Unit:enter_cast_anim()
-
-end
-
-function Unit:enter_damage_anim()
-
+function Unit:raw_allowed_tiles()
+    local result = {}
+    for y=self.move_range, 0, -1 do
+        table.insert(result, { x = self.tile_x , y = self.tile_y + y })
+        table.insert(result, { x = self.tile_x , y = self.tile_y - y })
+        for x = 0, self.move_range - y, 1 do
+            table.insert(result, { x = self.tile_x - x, y = self.tile_y - y })
+            table.insert(result, { x = self.tile_x - x, y = self.tile_y + y })
+            table.insert(result, { x = self.tile_x + x, y = self.tile_y - y })
+            table.insert(result, { x = self.tile_x + x, y = self.tile_y + y })
+        end
+    end
+    for x=self.move_range, 0, -1 do
+        table.insert(result, { x = self.tile_x - x, y = self.tile_y })
+        table.insert(result, { x = self.tile_x + x, y = self.tile_y })
+    end
+    return result
 end

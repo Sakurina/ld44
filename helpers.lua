@@ -23,3 +23,11 @@ function log(msg)
         lovebird.print(msg)
     end
 end
+
+function x_for_tile(x)
+    return constants.pixel_tile_width * constants.pixel_integer_scale * x
+end
+
+function y_for_tile(y)
+    return constants.pixel_tile_height * constants.pixel_integer_scale * y
+end
