@@ -22,12 +22,11 @@ function SRPGLayer:new()
     log(lume.format("[{1}] loaded map {2} ({3}x{4}px, {5}x{6} tile count)", {self.layer_name, self.map_img_file, self.map_img_width, self.map_img_height, self.tile_width_count, self.tile_height_count }))
 
     -- units and animations
-    self.sprite_a_img = love.graphics.newImage('gfx/sprite_a.png')
-    self.sprite_a_width = 30
-    self.sprite_a_height = 32
-    self.sprite_b_img = love.graphics.newImage('gfx/sprite_b.png')
-    self.sprite_b_width = 30
-    self.sprite_b_height = 32
+    self.p1 = P1Unit(2, 2)
+    self.u1 = U1Unit(3, 3)
+    self.u2 = U2Unit(2, 3)
+    self.e2 = E2Unit(5, 5)
+    self.e4 = E4Unit(6, 6)
 end
 
 -- CALLBACKS
@@ -40,8 +39,11 @@ function SRPGLayer:draw()
     love.graphics.draw(self.map_img, 0, 0, 0, 4, 4)
 
     -- middle: other entities
-    self:drawSpriteInCell(self.sprite_a_img, 4, 4, self.sprite_a_width, self.sprite_a_height)
-    self:drawSpriteInCell(self.sprite_b_img, 2, 2, self.sprite_b_width, self.sprite_b_height)
+    self.p1:draw()
+    self.u1:draw()
+    self.u2:draw()
+    self.e2:draw()
+    self.e4:draw()
 
     -- top: draw the cursor
     local cursor_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.cursor_tile_x
@@ -90,6 +92,12 @@ function SRPGLayer:update(dt)
     camera_x = lume.clamp(camera_x, camera_x, max_x)
     camera_y = lume.clamp(camera_y, camera_y, max_y)
     camera:setPosition(camera_x, camera_y)
+
+    self.p1:update(dt)
+    self.u1:update(dt)
+    self.u2:update(dt)
+    self.e2:update(dt)
+    self.e4:update(dt)
 end
 
 function SRPGLayer:keypressed(key, scancode, isrepeat)
@@ -108,6 +116,24 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         self.cursor_tile_target_x = self.cursor_tile_target_x - 1
     elseif key == layer_manager.controls["Right"] then
         self.cursor_tile_target_x = self.cursor_tile_target_x + 1
+    elseif key == '1' then
+        self.p1.active_animation = 'walk_animation'
+        self.u1.active_animation = 'walk_animation'
+        self.u2.active_animation = 'walk_animation'
+        self.e2.active_animation = 'walk_animation'
+        self.e4.active_animation = 'walk_animation'
+    elseif key == '2' then
+        self.p1.active_animation = 'cast_animation'
+        self.u1.active_animation = 'cast_animation'
+        self.u2.active_animation = 'cast_animation'
+        self.e2.active_animation = 'cast_animation'
+        self.e4.active_animation = 'cast_animation'
+    elseif key == '3' then
+        self.p1.active_animation = 'damage_animation'
+        self.u1.active_animation = 'damage_animation'
+        self.u2.active_animation = 'damage_animation'
+        self.e2.active_animation = 'damage_animation'
+        self.e4.active_animation = 'damage_animation'
     end
 
     self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
@@ -119,18 +145,3 @@ function SRPGLayer:keyreleased(key, scancode)
 end
 
 -- FUNCTIONALITY
-
-function SRPGLayer:drawSpriteInCell(img, cell_x, cell_y, sprite_w, sprite_h)
-    love.graphics.setColor(1,1,1,1)
-    local tile_w = constants.pixel_tile_width * constants.pixel_integer_scale
-    local tile_h = constants.pixel_tile_height * constants.pixel_integer_scale
-    local cell_origin_pixel_x = cell_x * tile_w
-    local cell_origin_pixel_y = cell_y * tile_h
-    sprite_w = sprite_w * constants.pixel_integer_scale
-    sprite_h = sprite_h * constants.pixel_integer_scale
-    local offset_x = (tile_w - sprite_w) / 2
-    local offset_y = (tile_h - sprite_h) / 2
-    local x = cell_origin_pixel_x + offset_x
-    local y = cell_origin_pixel_y + offset_y
-    love.graphics.draw(img, x, y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
-end

@@ -2,6 +2,7 @@ lume = require "deps/lume"
 lovebird = require "deps/lovebird"
 Object = require "deps/classic"
 json = require "deps/json"
+anim8 = require "deps/anim8"
 require('deps/camera')
 require("helpers")
 require("layer")
@@ -12,6 +13,17 @@ require("layer_controls")
 require("layer_menu")
 require("layer_srpg")
 require("constants")
+require("unit")
+require("unit_p1")
+require("unit_p2")
+require("unit_u1")
+require("unit_u2")
+require("unit_u3")
+require("unit_e1")
+require("unit_e2")
+require("unit_e3")
+require("unit_e4")
+require("unit_e5")
 
 function love.load()
     love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -31,11 +43,9 @@ function love.update(dt)
 end
 
 function love.keypressed(key, scancode, isrepeat)
-    return
     layer_manager:keypressed(key, scancode, isrepeat)
 end
 
 function love.keyreleased(key, scancode)
-    return
     layer_manager:keyreleased(key, scancode)
 end
