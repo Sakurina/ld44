@@ -77,9 +77,12 @@ function Unit:process_move_queue()
             local first = self.move_queue[1]
             self.tile_target_x = first.x
             self.tile_target_y = first.y
+            self.active_animation = 'walk_animation'
+            self[self.active_animation]:resume()
             lume.remove(self.move_queue, first)
         else
             self.processing_move_queue = false
+            self[self.active_animation]:pauseAtStart()
             self.moved_this_turn = true
         end
     end

@@ -149,23 +149,17 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
     elseif key == layer_manager.controls["Right"] then
         self.cursor_tile_target_x = self.cursor_tile_target_x + 1
     elseif key == layer_manager.controls["Back"] then
-        self.active_mode = 'overview'
-        self.allowed_tiles = {}
+        if self.active_mode == 'selection' then
+            self.active_mode = 'overview'
+            self.allowed_tiles = {}
+        end
     elseif key == layer_manager.controls["Confirm"] then
         if self.active_mode == 'overview' then
-            local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
-            if #units > 0 and units[1].user_controlled == true and units[1].moved_this_turn == false then
-                self.active_mode = 'selection'
-                self.selection_intention = 'move'
-                self.selected_unit = units[1]
-                self.allowed_tiles = units[1]:raw_allowed_tiles()
-            end
+            self:confirm_pressed_overview()
         elseif self.active_mode == 'selection' and self.selection_intention == 'move' then
-            self.active_mode = 'animation_wait'
-            self.selected_unit.processing_move_queue = true
+            self:confirm_move_selection()
         elseif self.active_mode == 'selection' and self.selection_intention == 'attack' then
-            -- todo something where we attack
-            self.active_mode = 'overview'
+            self:confirm_attack_selection()
         end
     elseif key == '1' then
         lume.each(self.units, function(u) u.active_animation = 'walk_animation' end)
@@ -173,6 +167,8 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         lume.each(self.units, function(u) u.active_animation = 'cast_animation' end)
     elseif key == '3' then
         lume.each(self.units, function(u) u.active_animation = 'damage_animation' end)
+    elseif key == '4' then
+        self:reset_player_turn()
     end
 
     self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
@@ -196,6 +192,28 @@ end
 
 -- FUNCTIONALITY
 
+function SRPGLayer:confirm_pressed_overview()
+    local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
+    if #units > 0 and units[1].user_controlled == true and units[1].moved_this_turn == false then
+        self.active_mode = 'selection'
+        self.selection_intention = 'move'
+        self.selected_unit = units[1]
+        self.allowed_tiles = units[1]:raw_allowed_tiles()
+    else
+        -- no selectable units, pop a menu to end turn
+    end
+end
+
+function SRPGLayer:confirm_move_selection()
+    self.active_mode = 'animation_wait'
+    self.selected_unit.processing_move_queue = true
+end
+
+function SRPGLayer:confirm_attack_selection() 
+    -- todo something where we attack
+    self.active_mode = 'overview'
+end
+
 function SRPGLayer:viable_attack_tiles(unit)
     -- return immediately adjacent tiles with attackable units
     local opposite_player = not unit.user_controlled
@@ -215,4 +233,9 @@ function SRPGLayer:viable_attack_tiles(unit)
         table.insert(tiles, { x = unit.tile_x, y = unit.tile_y })
     end
     return tiles
+end
+
+function SRPGLayer:reset_player_turn()
+    local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
+    lume.each(player_units, function(u) u.moved_this_turn = false end)
 end

@@ -9,7 +9,8 @@ function E1Unit:new(x, y)
     self.walk_animation = anim8.newAnimation(loaded_sheet('1-3', 1), constants.animation_frame_length)
     self.cast_animation = anim8.newAnimation(loaded_sheet('4-4', 1), constants.animation_frame_length)
     self.damage_animation = anim8.newAnimation(loaded_sheet('5-5', 1), constants.animation_frame_length)
-
+    self.walk_animation:pauseAtStart()
+    
     -- Movement
     self.move_range = constants.e1_move_range
 
