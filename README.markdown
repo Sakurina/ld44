@@ -7,7 +7,6 @@ This is an as of yet unnamed [Ludum Dare 44][ld] game by [Sakurina][skrn] and [w
 ## Tools used
 
 * [LÖVE][love], a Lua-based multiplatform 2D game framework.
-* [Tiled][tiled] for tile map creation and [Simple Tiled Implementation][sti] for tile map rendering.
 * [Lovebird][lovebird] for sane debugging.
 * [Lume][lume] for lots of useful helper functions.
 * [classic][classic] for easy class creation.
@@ -19,8 +18,6 @@ The usual license boilerplate can be found in *LICENSE.markdown*.
 [skrn]: https://twitter.com/Sakurina
 [woof]: https://twitter.com/woofycakes
 [love]: http://love2d.org
-[tiled]: https://www.mapeditor.org
-[sti]: https://github.com/karai17/Simple-Tiled-Implementation
 [lume]: https://github.com/rxi/lume/
 [lovebird]: https://github.com/rxi/lovebird
 [classic]: https://github.com/rxi/classic
