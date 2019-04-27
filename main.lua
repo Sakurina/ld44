@@ -1,6 +1,5 @@
 lume = require "deps/lume"
 lovebird = require "deps/lovebird"
-sti = require "deps/sti"
 Object = require "deps/classic"
 json = require "deps/json"
 require("helpers")
