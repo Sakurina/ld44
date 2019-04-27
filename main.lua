@@ -14,6 +14,7 @@ require("layer_srpg")
 require("constants")
 
 function love.load()
+    love.graphics.setDefaultFilter('nearest', 'nearest')
     layer_manager = LayerManager()
     layer_manager:reload_controls()
     local initial_layer = MenuLayer()
