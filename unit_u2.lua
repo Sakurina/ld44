@@ -15,7 +15,7 @@ function U2Unit:new(x, y)
     self.move_range = constants.u2_move_range
 
     -- Combat math
-    self.hp = 8
-    self.atk = 4
-    self.def = 3
+    self.hp = constants.u2_max_hp
+    self.atk = constants.u2_atk
+    self.def = constants.u2_def
 end

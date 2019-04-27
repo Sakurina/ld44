@@ -15,7 +15,7 @@ function P1Unit:new(x, y)
     self.move_range = constants.p1_move_range
 
     -- Combat math
-    self.hp = 15
-    self.atk = 7
-    self.def = 5
+    self.hp = constants.p1_max_hp
+    self.atk = constants.p1_atk
+    self.def = constants.p1_def
 end
