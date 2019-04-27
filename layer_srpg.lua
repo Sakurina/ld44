@@ -23,6 +23,7 @@ function SRPGLayer:new()
     log(lume.format("[{1}] loaded map {2} ({3}x{4}px, {5}x{6} tile count)", {self.layer_name, self.map_img_file, self.map_img_width, self.map_img_height, self.tile_width_count, self.tile_height_count }))
 
     -- selection mode stuff
+    self.selection_intention = 'move' -- 'move' or 'attack'
     self.allowed_tiles = {}
     self.selected_unit = nil
     self.target_unit = nil
@@ -32,8 +33,8 @@ function SRPGLayer:new()
     table.insert(self.units, P1Unit(2,2))
     table.insert(self.units, U1Unit(3,3))
     table.insert(self.units, U2Unit(2,3))
-    table.insert(self.units, E2Unit(5,5))
-    table.insert(self.units, E4Unit(6,6))
+    table.insert(self.units, E2Unit(5,4))
+    table.insert(self.units, E4Unit(6,3))
 end
 
 -- CALLBACKS
@@ -86,10 +87,17 @@ function SRPGLayer:draw()
 end
 
 function SRPGLayer:update(dt)
-    if self.active_mode == 'animation_wait' then
+    if self.active_mode == 'animation_wait' and self.selection_intention == 'move' then
         if self.selected_unit ~= nil and self.selected_unit.processing_move_queue == false then
-            self.active_mode = 'overview'
-            self.selected_unit = nil
+            local viable_attacks = self:viable_attack_tiles(self.selected_unit)
+            if #viable_attacks > 0 then
+                self.active_mode = 'selection'
+                self.selection_intention = 'attack'
+                self.allowed_tiles = viable_attacks
+            else
+                self.active_mode = 'overview'
+                self.selected_unit = nil
+            end
         end
     end
     local window_width = love.graphics.getWidth()
@@ -148,12 +156,16 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
             local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
             if #units > 0 and units[1].user_controlled == true and units[1].moved_this_turn == false then
                 self.active_mode = 'selection'
+                self.selection_intention = 'move'
                 self.selected_unit = units[1]
                 self.allowed_tiles = units[1]:raw_allowed_tiles()
             end
-        elseif self.active_mode == 'selection' then
+        elseif self.active_mode == 'selection' and self.selection_intention == 'move' then
             self.active_mode = 'animation_wait'
             self.selected_unit.processing_move_queue = true
+        elseif self.active_mode == 'selection' and self.selection_intention == 'attack' then
+            -- todo something where we attack
+            self.active_mode = 'overview'
         end
     elseif key == '1' then
         lume.each(self.units, function(u) u.active_animation = 'walk_animation' end)
@@ -183,3 +195,24 @@ function SRPGLayer:keyreleased(key, scancode)
 end
 
 -- FUNCTIONALITY
+
+function SRPGLayer:viable_attack_tiles(unit)
+    -- return immediately adjacent tiles with attackable units
+    local opposite_player = not unit.user_controlled
+    local left_x = unit.tile_x - 1
+    local right_x = unit.tile_x + 1
+    local up_y = unit.tile_y - 1
+    local down_y = unit.tile_y + 1
+    local units = lume.filter(self.units, function(u)
+        return u.user_controlled == opposite_player and
+            ((u.tile_x == left_x and u.tile_y == unit.tile_y) or
+            (u.tile_x == right_x and u.tile_y == unit.tile_y) or
+            (u.tile_x == unit.tile_x and u.tile_y == up_y) or
+            (u.tile_x == unit.tile_x and u.tile_y == down_y))
+    end)
+    local tiles = lume.map(units, function(u) return { x = u.tile_x, y = u.tile_y } end)
+    if #tiles > 0 then
+        table.insert(tiles, { x = unit.tile_x, y = unit.tile_y })
+    end
+    return tiles
+end
