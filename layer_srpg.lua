@@ -6,6 +6,9 @@ function SRPGLayer:new()
 
     self.cursor_tile_x = 0
     self.cursor_tile_y = 0
+    self.cursor_tile_target_x = 0
+    self.cursor_tile_target_y = 0
+    self.cursor_tile_anim_accumulator = 0
     self.map_img_file = 'maps/testmap.png'
     self.map_img = love.graphics.newImage(self.map_img_file)
     self.map_img_width = 1280
@@ -30,6 +33,13 @@ function SRPGLayer:draw()
     -- top: draw the cursor
     local cursor_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.cursor_tile_x
     local cursor_y = constants.pixel_tile_height * constants.pixel_integer_scale * self.cursor_tile_y
+    local cursor_proj_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.cursor_tile_target_x
+    local cursor_proj_y = constants.pixel_tile_height * constants.pixel_integer_scale * self.cursor_tile_target_y
+    if cursor_x ~= cursor_proj_x or cursor_y ~= cursor_proj_y then
+        local interpolation = self.cursor_tile_anim_accumulator / constants.cursor_move_speed
+        cursor_x = lume.lerp(cursor_x, cursor_proj_x, interpolation)
+        cursor_y = lume.lerp(cursor_y, cursor_proj_y, interpolation)
+    end
     local cursor_width = constants.pixel_tile_width * constants.pixel_integer_scale
     local cursor_height = constants.pixel_tile_height * constants.pixel_integer_scale
     love.graphics.setColor(0, 0, 1, 0.5)
@@ -45,6 +55,19 @@ function SRPGLayer:update(dt)
     local window_height = love.graphics.getHeight()
     local cursor_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.cursor_tile_x
     local cursor_y = constants.pixel_tile_height * constants.pixel_integer_scale * self.cursor_tile_y
+    local cursor_proj_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.cursor_tile_target_x
+    local cursor_proj_y = constants.pixel_tile_height * constants.pixel_integer_scale * self.cursor_tile_target_y
+    if cursor_x ~= cursor_proj_x or cursor_y ~= cursor_proj_y then
+        self.cursor_tile_anim_accumulator = self.cursor_tile_anim_accumulator + dt
+        local interpolation = self.cursor_tile_anim_accumulator / constants.cursor_move_speed
+        cursor_x = lume.lerp(cursor_x, cursor_proj_x, interpolation)
+        cursor_y = lume.lerp(cursor_y, cursor_proj_y, interpolation)
+        if self.cursor_tile_anim_accumulator > constants.cursor_move_speed then
+            self.cursor_tile_x = self.cursor_tile_target_x
+            self.cursor_tile_y = self.cursor_tile_target_y
+            self.cursor_tile_anim_accumulator = 0
+        end
+    end
     local cursor_width = constants.pixel_tile_width * constants.pixel_integer_scale
     local cursor_height = constants.pixel_tile_height * constants.pixel_integer_scale
     local camera_x = cursor_x - window_width / 2 + cursor_width / 2
@@ -60,25 +83,22 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
     if self.paused == 1 then
         return
     end
-    if isrepeat == true then
+    if self.cursor_tile_anim_accumulator ~= 0 then
         return
-    end
-    if cursor_active == false then
-        return
-    end
-    
-    if key == layer_manager.controls["Up"] then
-        self.cursor_tile_y = self.cursor_tile_y - 1
-    elseif key == layer_manager.controls["Down"] then
-        self.cursor_tile_y = self.cursor_tile_y + 1
-    elseif key == layer_manager.controls["Left"] then
-        self.cursor_tile_x = self.cursor_tile_x - 1
-    elseif key == layer_manager.controls["Right"] then
-        self.cursor_tile_x = self.cursor_tile_x + 1
     end
 
-    self.cursor_tile_x = lume.clamp(self.cursor_tile_x, 0, self.tile_width_count - 1)
-    self.cursor_tile_y = lume.clamp(self.cursor_tile_y, 0, self.tile_height_count - 1)
+    if key == layer_manager.controls["Up"] then
+        self.cursor_tile_target_y = self.cursor_tile_target_y - 1
+    elseif key == layer_manager.controls["Down"] then
+        self.cursor_tile_target_y = self.cursor_tile_target_y + 1
+    elseif key == layer_manager.controls["Left"] then
+        self.cursor_tile_target_x = self.cursor_tile_target_x - 1
+    elseif key == layer_manager.controls["Right"] then
+        self.cursor_tile_target_x = self.cursor_tile_target_x + 1
+    end
+
+    self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
+    self.cursor_tile_target_y = lume.clamp(self.cursor_tile_target_y, 0, self.tile_height_count - 1)
 end
 
 function SRPGLayer:keyreleased(key, scancode)
