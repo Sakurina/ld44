@@ -57,7 +57,7 @@ end
 -- HELPERS
 
 function LayerManager:transition(from, to)
-    log("[LayerManager] Transition invoked from {1} to {2}", { from.layer_name, to.layer_name })
+    log(lume.format("[LayerManager] Transition invoked from {1} to {2}", { from.layer_name, to.layer_name }))
     local transition_layer = TransitionLayer(from, to)
     self:prepend(transition_layer)
 end

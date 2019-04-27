@@ -2,6 +2,7 @@ SRPGLayer = Layer:extend()
 
 function SRPGLayer:new()
     SRPGLayer.super.new(self)
+    self.game_ended = false
     self.layer_name = "SRPGLayer"
     self.active_mode = 'overview'
 
@@ -87,6 +88,26 @@ function SRPGLayer:draw()
 end
 
 function SRPGLayer:update(dt)
+    if self.game_ended == true then
+        return
+    end
+    self.units = lume.filter(self.units, function(u) return u.purge == false end)
+    local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
+    local enemy_units = lume.filter(self.units, function(u) return u.user_controlled == false end)
+    if #player_units <= 0 then
+        self.game_ended = true
+        log(lume.format("[{1}] game over (all friendly units dead)", { self.layer_name }))
+        local win_layer = LoseLayer()
+        layer_manager:transition(self, win_layer)
+        return
+    end
+    if #enemy_units <= 0 then
+        self.game_ended = true
+        log(lume.format("[{1}] you win (all enemy units dead)", { self.layer_name }))
+        local lose_layer = WinLayer()
+        layer_manager:transition(self, lose_layer)
+        return
+    end
     if self.active_mode == 'animation_wait' and self.selection_intention == 'move' then
         if self.selected_unit ~= nil and self.selected_unit.processing_move_queue == false then
             local viable_attacks = self:viable_attack_tiles(self.selected_unit)
@@ -210,7 +231,35 @@ function SRPGLayer:confirm_move_selection()
 end
 
 function SRPGLayer:confirm_attack_selection() 
-    -- todo something where we attack
+    log(lume.format("[{1}] entering combat", { self.layer_name }))
+    local attacker = self.selected_unit
+    log(lume.format("[{1}] attacker: {2}", { self.layer_name, attacker.unit_name }))
+    local target_units = lume.filter(self.units, function(u) return u.user_controlled == not attacker.user_controlled and u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
+    if #target_units > 0 then
+        local defender = target_units[1]
+        log(lume.format("[{1}] defender: {2}", { self.layer_name, defender.unit_name }))
+        local damage = attack_formula(attacker.atk, defender.def)
+        log(lume.format("[{1}] {2} deals {4} damage to {3}", { self.layer_name, attacker.unit_name, defender.unit_name, damage }))
+        defender.hp = defender.hp - damage
+        if defender.hp <= 0 then
+            defender.purge = true
+            log(lume.format("[{1}] {2} has died", { self.layer_name, defender.unit_name }))
+        else
+            log(lume.format("[{1}] {2} has {3} HP remaining", { self.layer_name, defender.unit_name, defender.hp }))
+            local retaliation = attack_formula(defender.atk, attacker.def)
+            attacker.hp = attacker.hp - retaliation
+            log(lume.format("[{1}] {2} deals {4} damage to {3} in retaliation", { self.layer_name, defender.unit_name, attacker.unit_name, retaliation }))
+            if attacker.hp <= 0 then
+                attacker.purge = true
+                log(lume.format("[{1}] {2} has died", { self.layer_name, attacker.unit_name }))
+            else
+                log(lume.format("[{1} {2} has {3} HP remaining", { self.layer_name, attacker.unit_name, attacker.hp }))
+            end
+        end
+    else
+        log(lume.format("[{1}] no unit targeted", { self.layer_name }))
+    end
+    log(lume.format("[{1}] exiting combat", { self.layer_name }))
     self.active_mode = 'overview'
 end
 

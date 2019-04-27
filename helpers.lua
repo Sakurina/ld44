@@ -34,16 +34,16 @@ end
 
 function attack_formula(attacker_atk, defender_def)
     local odds = {
-        ["whiff"] = 15,
-        ["critical"] = 5,
-        ["normal"] = 65,
-        ["weak"] = 15
+        ["miss"] = constants.miss_hit_odds,
+        ["critical"] = constants.critical_hit_odds,
+        ["normal"] = constants.normal_hit_odds,
+        ["weak"] = constants.weak_hit_odds
     }
     local multipliers = {
-        whiff = 0,
-        critical = 3,
-        normal = 1, 
-        weak = 0.6
+        miss = constants.miss_hit_mult,
+        critical = constants.critical_hit_mult,
+        normal = constants.normal_hit_mult, 
+        weak = constants.weak_hit_mult
     }
     local roll = lume.weightedchoice(odds)
     local atk_multiplier = multipliers[roll]
@@ -51,5 +51,5 @@ function attack_formula(attacker_atk, defender_def)
     if theoretical_attack <= 0 then
         theoretical_attack = 1
     end
-    return theoretical_attack * atk_multiplier
+    return math.ceil(theoretical_attack * atk_multiplier)
 end

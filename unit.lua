@@ -4,6 +4,8 @@ function Unit:new(tile_x, tile_y)
     self.unit_name = "Unknown Unit"
     self.user_controlled = false
 
+    self.purge = false
+    
     -- Sprite
     self.sprite_sheet = nil 
     self.active_animation = 'walk_animation'
