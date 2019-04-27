@@ -198,7 +198,7 @@ function SRPGLayer:confirm_pressed_overview()
         self.active_mode = 'selection'
         self.selection_intention = 'move'
         self.selected_unit = units[1]
-        self.allowed_tiles = units[1]:raw_allowed_tiles()
+        self.allowed_tiles = self:viable_move_tiles(units[1])
     else
         -- no selectable units, pop a menu to end turn
     end
@@ -233,6 +233,16 @@ function SRPGLayer:viable_attack_tiles(unit)
         table.insert(tiles, { x = unit.tile_x, y = unit.tile_y })
     end
     return tiles
+end
+
+function SRPGLayer:viable_move_tiles(unit)
+    local raw_tiles = unit:raw_allowed_tiles()
+    local filtered_tiles = lume.filter(raw_tiles, function(t)
+        return not lume.any(self.units, function(u)
+            return u ~= unit and u.tile_x == t.x and u.tile_y == t.y
+        end)
+    end)
+    return filtered_tiles
 end
 
 function SRPGLayer:reset_player_turn()
