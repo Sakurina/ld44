@@ -146,7 +146,7 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
     elseif key == layer_manager.controls["Confirm"] then
         if self.active_mode == 'overview' then
             local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
-            if #units > 0 then
+            if #units > 0 and units[1].user_controlled == true and units[1].moved_this_turn == false then
                 self.active_mode = 'selection'
                 self.selected_unit = units[1]
                 self.allowed_tiles = units[1]:raw_allowed_tiles()

@@ -2,6 +2,8 @@ Unit = Object:extend()
 
 function Unit:new(tile_x, tile_y)
     self.unit_name = "Unknown Unit"
+    self.user_controlled = false
+
     -- Sprite
     self.sprite_sheet = nil 
     self.active_animation = 'walk_animation'
@@ -56,6 +58,11 @@ function Unit:update(dt)
 end
 
 function Unit:draw()
+    if self.moved_this_turn == true then
+        love.graphics.setColor(1, 1, 1, 0.5)
+    else
+        love.graphics.setColor(1, 1, 1, 1)
+    end
     self[self.active_animation]:draw(self.sprite_sheet, self.pixel_x, self.pixel_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
 end
 
@@ -73,6 +80,7 @@ function Unit:process_move_queue()
             lume.remove(self.move_queue, first)
         else
             self.processing_move_queue = false
+            self.moved_this_turn = true
         end
     end
 end
