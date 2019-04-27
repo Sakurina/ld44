@@ -1,0 +1,27 @@
+# Untitled Ludum Dare 44 Project
+
+**The gist:** Strategy RPG where basic units can be sacrificed for a pip of colored mana which can activate special abilities on Named Hero Units?
+
+This is an as of yet unnamed [Ludum Dare 44][ld] game by [Sakurina][skrn] and [woofycakes][woof]. The theme of the jam is **"your life is currency"**.
+
+## Tools used
+
+* [LÖVE][love], a Lua-based multiplatform 2D game framework.
+* [Tiled][tiled] for tile map creation and [Simple Tiled Implementation][sti] for tile map rendering.
+* [Lovebird][lovebird] for sane debugging.
+* [Lume][lume] for lots of useful helper functions.
+* [classic][classic] for easy class creation.
+* [json.lua][jsonlua] for data serialization/deserialization.
+
+The usual license boilerplate can be found in *LICENSE.markdown*.
+
+[ld]: https://ldjam.com
+[skrn]: https://twitter.com/Sakurina
+[woof]: https://twitter.com/woofycakes
+[love]: http://love2d.org
+[tiled]: https://www.mapeditor.org
+[sti]: https://github.com/karai17/Simple-Tiled-Implementation
+[lume]: https://github.com/rxi/lume/
+[lovebird]: https://github.com/rxi/lovebird
+[classic]: https://github.com/rxi/classic
+[jsonlua]: https://github.com/rxi/json.lua
