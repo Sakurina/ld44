@@ -282,7 +282,29 @@ end
 function SRPGLayer:confirm_pressed_overview()
     local that = self
     local mana_callback = function(ability)
+        if ability == nil then
+            layer_manager:remove_first()
+            return
+        end
 
+        if self.player_red_mana >= ability.r_cost and self.player_green_mana >= ability.g_cost and self.player_blue_mana >= ability.b_cost then
+            self.player_red_mana = self.player_red_mana - ability.r_cost
+            self.player_green_mana  = self.player_green_mana - ability.g_cost
+            self.player_blue_mana = self.player_blue_mana - ability.b_cost
+            if ability.name == 'Double Strike' then
+                that.selected_unit.has_doublestr = true
+            elseif ability.name == 'Reflector Gate' then
+                that.selected_unit.has_reflect = true
+            elseif ability.name == 'Healing Aura' then
+                that.selected_unit.has_healaura = true
+            elseif ability.name == 'Hungering Blade' then
+                that.selected_unit.has_hungering = true
+            end
+            layer_manager:remove_first()
+        else
+            -- play a failure sound or something
+            log("insufficient mana")
+        end
     end
     local menu_callback = function(menu_option)
         if menu_option == 'Move' then

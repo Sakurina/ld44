@@ -77,7 +77,7 @@ function Unit:update(dt)
 
     local offset_x = (constants.pixel_sprite_width - constants.pixel_tile_width) * 0.5 * constants.pixel_integer_scale;
     local offset_y = (constants.pixel_sprite_height - constants.pixel_tile_width) * 0.5 * constants.pixel_integer_scale;
-    if self.active_animation == 'walk_animation' and self[self.active_animation].position == 2 then
+    if self.active_animation == 'walk_animation' and (self[self.active_animation].position == 2 or self[self.active_animation].position == 4) then
         offset_y = offset_y + constants.pixel_integer_scale
     end
     if self.has_feet == true then
