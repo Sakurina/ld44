@@ -2,7 +2,7 @@ P1Unit = Unit:extend()
 
 function P1Unit:new(x, y)
     P1Unit.super.new(self, x, y)
-    self.unit_name = "P1"
+    self.unit_name = "Britney"
     self.is_hero = true
     self.has_feet = true
     self.user_controlled = true

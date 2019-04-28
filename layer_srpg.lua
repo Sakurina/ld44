@@ -54,6 +54,14 @@ function SRPGLayer:new()
     table.insert(self.units, E4Unit(38,10))
     table.insert(self.units, E5Unit(40,10))
     table.insert(self.units, E4Unit(42,10))
+    table.insert(self.units, U3Unit(28,17))
+    table.insert(self.units, U2Unit(30,17))
+    table.insert(self.units, U1Unit(32,17))
+    table.insert(self.units, U2Unit(34,17))
+    table.insert(self.units, U3Unit(36,17))
+    table.insert(self.units, U2Unit(38,17))
+    table.insert(self.units, U1Unit(40,17))
+    table.insert(self.units, U2Unit(42,17))
     table.insert(self.units, U3Unit(28,18))
     table.insert(self.units, U2Unit(30,18))
     table.insert(self.units, U1Unit(32,18))
@@ -134,7 +142,7 @@ function SRPGLayer:update(dt)
         if self.hover_ui ~= nil then
             layer_manager:remove_first()
         end
-        local win_layer = LoseLayer()
+        local win_layer = WinLayer()
         layer_manager:transition(self, win_layer)
         return
     end
@@ -202,7 +210,6 @@ function SRPGLayer:update(dt)
             self.cursor_tile_x = self.cursor_tile_target_x
             self.cursor_tile_y = self.cursor_tile_target_y
             self.cursor_tile_anim_accumulator = 0
-            log(lume.format("[{1}] x={2}, y={3}", { self.layer_name, self.cursor_tile_x, self.cursor_tile_y }))
             self:populate_hover_ui()
         end
     end
@@ -297,7 +304,7 @@ function SRPGLayer:confirm_pressed_overview()
                 that.selected_unit.has_reflect = true
             elseif ability.name == 'Healing Aura' then
                 that.selected_unit.has_healaura = true
-            elseif ability.name == 'Hungering Blade' then
+            elseif ability.name == 'Hunger Blade' then
                 that.selected_unit.has_hungering = true
             end
             layer_manager:remove_first()
@@ -387,8 +394,32 @@ end
 function SRPGLayer:combat_phase_initial_damage(attacker, defender)
     -- Deal the initial damage
     local damage = attack_formula(attacker.atk, defender.def)
+
+    log(attacker.has_hungering)
+    if attacker.has_doublestr == true then
+        local double_dmg = attack_formula(attacker.atk, defender.def)
+        local old_dmg = damage
+        damage = damage + double_dmg
+        log(lume.format("[{1}] double strike proc on attacker {2}, damage now {3}, was {4}", { self.layer_name, attacker.unit_name, damage, old_dmg }))
+    end
+    if defender.has_reflect == true then
+        local reflect_dmg = lume.round(damage * 0.5)
+        local old_dmg = damage
+        damage = damage - reflect_dmg
+        attacker.hp = attacker.hp - reflect_dmg
+        log(lume.format("[{1}] reflection gate proc on defender {2}, damage now {3}, was {4}, attacker takes {5}", { self.layer_name, defender.unit_name, damage, old_dmg, reflect_dmg }))
+    end
+    if attacker.has_hungering == true then
+        local hungering_heal = lume.round(damage * 0.5)
+        log(lume.format("[{1}] hungering blade proc on attacker {2}, heals for {3}", { self.layer_name, attacker.unit_name, hungering_heal }))
+        attacker.hp = attacker.hp + hungering_heal
+        if attacker.hp > attacker.max_hp then
+            attacker.hp = attacker.max_hp
+        end
+    end
     log(lume.format("[{1}] {2} deals {4} damage to {3}", { self.layer_name, attacker.unit_name, defender.unit_name, damage }))
     defender.hp = defender.hp - damage
+    
 end
 
 function SRPGLayer:combat_phase_atk_cast(attacker, defender)
@@ -437,14 +468,12 @@ function SRPGLayer:combat_phase_retaliation_damage(attacker, defender)
 end
 
 function SRPGLayer:combat_phase_ret_cast(attacker, defender)
-    log("7")
     -- Defender casts spell
     defender.active_animation = 'cast_animation'
     self.selection_intention = 'attack6'
 end
 
 function SRPGLayer:combat_phase_ret_receive(attacker, defender)
-    log("8")
     -- Attacker receives damage, defender returns to normal
     defender.active_animation = 'walk_animation'
     attacker.active_animation = 'damage_animation'
@@ -453,7 +482,6 @@ function SRPGLayer:combat_phase_ret_receive(attacker, defender)
 end
 
 function SRPGLayer:combat_phase_post_ret(attacker, defender)
-    log("9")
     if attacker.hp <= 0 then
         attacker.purge = true
         self:combat_phase_ended(attacker, defender)
@@ -464,14 +492,12 @@ function SRPGLayer:combat_phase_post_ret(attacker, defender)
 end
 
 function SRPGLayer:combat_phase_ret_cursor_move(attacker, defender)
-    log("10")
     self.cursor_tile_target_x = attacker.tile_x
     self.cursor_tile_target_y = attacker.tile_y
     self:combat_phase_ended(attacker, defender)
 end
 
 function SRPGLayer:combat_phase_ended(attacker, defender)
-    log("11 END")
     if attacker.user_controlled == true then
         -- perform cleanup and regain control
         self.active_mode = 'overview'
@@ -517,6 +543,7 @@ end
 function SRPGLayer:reset_player_turn()
     local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
     lume.each(player_units, function(u) u.moved_this_turn = false end)
+    self:healing_aura_phase(true)
 end
 
 function SRPGLayer:populate_hover_ui()
@@ -543,6 +570,7 @@ function SRPGLayer:start_enemy_turn()
     self.active_mode = 'animation_wait'
     local enemy_units = lume.filter(self.units, function(u) return u.user_controlled == false end)
     lume.each(enemy_units, function(u) u.moved_this_turn = false end)
+    self:healing_aura_phase(false)
     self:enemy_turn_loop()
 end
 
@@ -604,4 +632,20 @@ end
 
 function SRPGLayer:mana_report()
     log(lume.format("[{1}] mana: player ({2}/{3}/{4}), enemy ({5}/{6}/{7})", { self.layer_name, self.player_red_mana, self.player_green_mana, self.player_blue_mana, self.enemy_red_mana, self.enemy_green_mana, self.enemy_blue_mana}))
+end
+
+function SRPGLayer:healing_aura_phase(user_controlled)
+    local eligible_units = lume.filter(self.units, function(u) return u.user_controlled == user_controlled and u.has_healaura == true end)
+    if #eligible_units <= 0 then
+        return
+    else
+        lume.each(eligible_units, function(u)
+            local heal_amount = lume.round(u.max_hp * 0.15)
+            log(lume.format("[{1}] healing aura proc: {2} heals for {3}", { self.layer_name, u.unit_name, heal_amount }))
+            u.hp = u.hp + heal_amount
+            if u.hp > u.max_hp then
+                u.hp = u.max_hp
+            end
+        end)
+    end
 end

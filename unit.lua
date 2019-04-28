@@ -104,7 +104,6 @@ end
 
 function Unit:queue_move(x, y)
     table.insert(self.move_queue, { x = x, y = y })
-    log(lume.format("[{1}] {2}", { self.unit_name, lume.serialize(self.move_queue) }))
 end
 
 function Unit:process_move_queue()
