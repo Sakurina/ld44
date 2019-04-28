@@ -3,6 +3,7 @@ E2Unit = Unit:extend()
 function E2Unit:new(x, y)
     E2Unit.super.new(self, x, y)
     self.unit_name = "E2"
+    self.is_hero = true
     self.has_feet = true
     self.user_controlled = false
     self.sprite_sheet = love.graphics.newImage('gfx/enemy/e2_1.png')

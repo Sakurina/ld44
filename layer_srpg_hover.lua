@@ -7,6 +7,8 @@ function HoverUILayer:new()
     self.from_hp = 4
     self.to_hp = 4
     self.max_hp = 4
+    self.atk = 0
+    self.def = 0
     self.counter = 0
     self.unit_name = "(no selection)"
     self.show_ui = false
@@ -60,9 +62,25 @@ function HoverUILayer:draw()
         constants.hover_ui_hpbar_height)
 
     -- unit name
+    love.graphics.setFont(constants.big_font)
     love.graphics.setColor(0, 0, 0, 1)
-    love.graphics.setFont(love.graphics.newFont(72))
-    love.graphics.print(self.unit_name, constants.hover_ui_x + 16 , constants.hover_ui_y + 16)
+    love.graphics.print(self.unit_name, constants.hover_ui_x + 16 , constants.hover_ui_y + 2)
+
+    local def_x = constants.hover_ui_x + constants.hover_ui_width - 16 - 55
+    local def_lbl_x = def_x - 16 - 75
+    local atk_x = def_lbl_x - 16 - 55
+    local atk_lbl_x = atk_x - 16 - 75
+    local hp_x = atk_lbl_x - 16 - 55
+    local hp_lbl_x = hp_x - 16 - 55
+
+    love.graphics.setColor(0.3, 0.3, 0.3, 1)
+    love.graphics.print("DEF", def_lbl_x, constants.hover_ui_y + 2)
+    love.graphics.print("ATK", atk_lbl_x, constants.hover_ui_y + 2)
+    love.graphics.print("HP", hp_lbl_x, constants.hover_ui_y + 2)
+    love.graphics.setColor(0, 0, 0, 1)
+    love.graphics.print(self.def, def_x, constants.hover_ui_y + 2)
+    love.graphics.print(self.atk, atk_x, constants.hover_ui_y + 2)
+    love.graphics.print(self.from_hp, hp_x, constants.hover_ui_y + 2)
 end
 
 function HoverUILayer:update(dt)

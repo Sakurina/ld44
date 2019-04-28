@@ -3,6 +3,7 @@ P2Unit = Unit:extend()
 function P2Unit:new(x, y)
     P2Unit.super.new(self, x, y)
     self.unit_name = "P2"
+    self.is_hero = true
     self.has_feet = true
     self.user_controlled = true
     self.sprite_sheet = love.graphics.newImage('gfx/player/p2_1.png')

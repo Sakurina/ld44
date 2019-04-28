@@ -74,13 +74,21 @@ constants = {
     miss_hit_odds = 15,
 
     hover_ui_x = 16,
-    hover_ui_y = 576,
+    hover_ui_y = 640,
     hover_ui_width = 1248,
-    hover_ui_height = 128,
+    hover_ui_height = 64,
 
     hover_ui_hpbar_x = 16,
-    hover_ui_hpbar_y = 568,
+    hover_ui_hpbar_y = 632,
     hover_ui_hpbar_width = 1248,
     hover_ui_hpbar_height = 8,
-    hover_ui_hpbar_speed = 0.25
+    hover_ui_hpbar_speed = 0.25,
+
+    unit_menu_x = 16,
+    unit_menu_y = 16,
+    unit_menu_width = 380,
+    unit_menu_height_per_item = 56,
+    unit_menu_bottom_padding = 16,
+
+    big_font = love.graphics.newFont("deps/m5x7.ttf", 72)
 }

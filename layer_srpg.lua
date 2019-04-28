@@ -192,6 +192,9 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
     if self.paused == 1 then
         return
     end
+    if self.active_mode == 'animation_wait' then
+        return
+    end
     if self.cursor_tile_anim_accumulator ~= 0 then
         return
     end
@@ -243,15 +246,43 @@ end
 -- FUNCTIONALITY
 
 function SRPGLayer:confirm_pressed_overview()
+    local that = self
+    local menu_callback = function(menu_option)
+        if menu_option == 'Move' then
+            that.active_mode = 'selection'
+            that.selection_intention = 'move'
+            that.allowed_tiles = that:viable_move_tiles(that.selected_unit)
+        elseif menu_option == 'Attack' then
+            that.active_mode = 'selection'
+            that.selection_intention = 'attack'
+            that.allowed_tiles = that:viable_attack_tiles(that.selected_unit)
+        elseif menu_option == 'Wait' then
+            that.selected_unit.moved_this_turn = true
+        elseif menu_option == 'Pass Turn' then
+            that:reset_player_turn()
+        end
+        layer_manager:remove_first()
+    end
+    local unit_menu = nil
     local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
     if #units > 0 and units[1].user_controlled == true and units[1].moved_this_turn == false then
-        self.active_mode = 'selection'
-        self.selection_intention = 'move'
         self.selected_unit = units[1]
-        self.allowed_tiles = self:viable_move_tiles(units[1])
+        local mode = nil
+        local viable_attacks = self:viable_attack_tiles(units[1])
+        if units[1].is_hero == true then
+            mode = 'hero_unit'
+        else
+            mode = 'basic_unit'
+        end
+        if #viable_attacks == 0 then
+            mode = mode .. '_no_atk'
+        end
+        unit_menu = UnitSelectMenuLayer(mode, menu_callback)
     else
         -- no selectable units, pop a menu to end turn
+        unit_menu = UnitSelectMenuLayer('blank_tile', menu_callback)
     end
+    layer_manager:prepend(unit_menu)
 end
 
 function SRPGLayer:confirm_move_selection()
@@ -262,6 +293,7 @@ end
 function SRPGLayer:confirm_attack_selection() 
     log(lume.format("[{1}] entering combat", { self.layer_name }))
     local attacker = self.selected_unit
+    attacker.moved_this_turn = true
     log(lume.format("[{1}] attacker: {2}", { self.layer_name, attacker.unit_name }))
     local target_units = lume.filter(self.units, function(u) return u.user_controlled == not attacker.user_controlled and u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
     if #target_units > 0 then
@@ -412,6 +444,8 @@ function SRPGLayer:populate_hover_ui()
         self.hover_ui.max_hp = u.max_hp
         self.hover_ui.from_hp = u.hp
         self.hover_ui.to_hp = u.hp
+        self.hover_ui.atk = u.atk
+        self.hover_ui.def = u.def
         self.hover_ui.unit_name = u.unit_name
     else
         self.hover_ui.show_ui = false

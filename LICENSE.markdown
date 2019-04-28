@@ -126,3 +126,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## m5x7
+
+m5x7 is a public domain / [Creative Commons Zero](https://creativecommons.org/share-your-work/public-domain/cc0/) font by [Daniel Linssen](https://managore.itch.io).

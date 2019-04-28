@@ -12,6 +12,7 @@ This is an as of yet unnamed [Ludum Dare 44][ld] game by [Sakurina][skrn] and [w
 * [Lume][lume] for lots of useful helper functions.
 * [classic][classic] for easy class creation.
 * [json.lua][jsonlua] for data serialization/deserialization.
+* [m5x7][m5x7] as the UI font.
 
 The usual license boilerplate can be found in *LICENSE.markdown*.
 
@@ -24,3 +25,4 @@ The usual license boilerplate can be found in *LICENSE.markdown*.
 [lovebird]: https://github.com/rxi/lovebird
 [classic]: https://github.com/rxi/classic
 [jsonlua]: https://github.com/rxi/json.lua
+[m5x7]: https://managore.itch.io/m5x7
