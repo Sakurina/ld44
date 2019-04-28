@@ -3,6 +3,7 @@ P1Unit = Unit:extend()
 function P1Unit:new(x, y)
     P1Unit.super.new(self, x, y)
     self.unit_name = "P1"
+    self.has_feet = true
     self.user_controlled = true
     self.sprite_sheet = love.graphics.newImage('gfx/player/p1_1.png')
     local loaded_sheet = anim8.newGrid(48, 48, self.sprite_sheet:getWidth(), self.sprite_sheet:getHeight(), 0, 0)

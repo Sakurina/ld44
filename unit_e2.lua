@@ -3,6 +3,7 @@ E2Unit = Unit:extend()
 function E2Unit:new(x, y)
     E2Unit.super.new(self, x, y)
     self.unit_name = "E2"
+    self.has_feet = true
     self.user_controlled = false
     self.sprite_sheet = love.graphics.newImage('gfx/enemy/e2_1.png')
     local loaded_sheet = anim8.newGrid(48, 48, self.sprite_sheet:getWidth(), self.sprite_sheet:getHeight(), 0, 0)

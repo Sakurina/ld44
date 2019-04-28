@@ -9,6 +9,7 @@ function Unit:new(tile_x, tile_y)
     -- Sprite
     self.sprite_sheet = nil 
     self.active_animation = 'walk_animation'
+    self.has_feet = false
     self.walk_animation = nil
     self.cast_animation = nil
     self.damage_animation = nil
@@ -70,6 +71,9 @@ function Unit:update(dt)
     local offset_y = (constants.pixel_sprite_height - constants.pixel_tile_width) * 0.5 * constants.pixel_integer_scale;
     if self.active_animation == 'walk_animation' and self[self.active_animation].position == 2 then
         offset_y = offset_y + constants.pixel_integer_scale
+    end
+    if self.has_feet == true then
+        offset_y = offset_y + constants.pixel_sprite_foot_offset
     end
     local pixel_x = constants.pixel_tile_width * constants.pixel_integer_scale * self.tile_x - offset_x
     local pixel_y = constants.pixel_tile_height * constants.pixel_integer_scale * self.tile_y - offset_y

@@ -4,6 +4,7 @@ constants = {
     pixel_tile_height = 24,
     pixel_sprite_width = 48,
     pixel_sprite_height = 48,
+    pixel_sprite_foot_offset = 8,
     cursor_move_speed = 0.1,
     unit_move_speed = 0.1,
     animation_frame_length = 0.2,
