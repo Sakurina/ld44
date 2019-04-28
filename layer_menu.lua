@@ -4,7 +4,7 @@ function MenuLayer:new()
     MenuLayer.super.new(self)
     self.layer_name = "MenuLayer"
     self.selected_index = 1
-    self.items = {"Play", "Controls", "Quit", "Hover Debug"}
+    self.items = {"Play", "Controls", "Quit" }
 end
 
 -- CALLBACKS
@@ -74,9 +74,6 @@ function MenuLayer:select_item()
     end
     if self.selected_index == 2 then
         destination_layer = ControlsLayer()
-    end
-    if self.selected_index == 4 then
-        destination_layer = HoverUILayer()
     end
     if destination_layer ~= nil then
         layer_manager:transition(self, destination_layer)

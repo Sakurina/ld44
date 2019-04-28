@@ -6,10 +6,10 @@ constants = {
     pixel_sprite_height = 48,
     pixel_sprite_foot_offset = 8,
     cursor_move_speed = 0.1,
-    unit_move_speed = 0.1,
+    unit_move_speed = 0.3,
     animation_frame_length = 0.2,
-    cast_animation_length = 0.3,
-    damage_animation_length = 0.2,
+    cast_animation_length = 0.5,
+    damage_animation_length = 0.5,
 
     p1_max_hp = 20,
     p1_atk = 16,

@@ -39,6 +39,23 @@ function SRPGLayer:new()
     table.insert(self.units, E2Unit(18,14))
     table.insert(self.units, E4Unit(19,13))
     table.insert(self.units, E5Unit(19,15))
+    table.insert(self.units, E3Unit(28,10))
+    table.insert(self.units, E4Unit(30,10))
+    table.insert(self.units, E5Unit(32,10))
+    table.insert(self.units, E4Unit(34,10))
+    table.insert(self.units, E3Unit(36,10))
+    table.insert(self.units, E4Unit(38,10))
+    table.insert(self.units, E5Unit(40,10))
+    table.insert(self.units, E4Unit(42,10))
+    table.insert(self.units, U3Unit(28,18))
+    table.insert(self.units, U2Unit(30,18))
+    table.insert(self.units, U1Unit(32,18))
+    table.insert(self.units, U2Unit(34,18))
+    table.insert(self.units, U3Unit(36,18))
+    table.insert(self.units, U2Unit(38,18))
+    table.insert(self.units, U1Unit(40,18))
+    table.insert(self.units, U2Unit(42,18))
+    table.insert(self.units, E1Unit(68,14))
 end
 
 -- CALLBACKS
@@ -127,17 +144,24 @@ function SRPGLayer:update(dt)
     if self.active_mode == 'animation_wait' then
         if self.selection_intention == 'move' then
             if self.selected_unit ~= nil and self.selected_unit.processing_move_queue == false then
-                local viable_attacks = self:viable_attack_tiles(self.selected_unit)
-                if #viable_attacks > 0 then
-                    self.active_mode = 'selection'
-                    self.selection_intention = 'attack'
-                    self.allowed_tiles = viable_attacks
+                if self.selected_unit.user_controlled == true then
+                    local viable_attacks = self:viable_attack_tiles(self.selected_unit)
+                    if #viable_attacks > 0 then
+                        self.active_mode = 'selection'
+                        self.selection_intention = 'attack'
+                        self.allowed_tiles = viable_attacks
+                    else
+                        self.active_mode = 'overview'
+                        self.selected_unit = nil
+                    end
                 else
-                    self.active_mode = 'overview'
-                    self.selected_unit = nil
+                    self:enemy_turn_loop()
                 end
+                
                 self:populate_hover_ui()
             end
+        elseif self.selection_intention == 'focus_enemy' then
+            self:enemy_turn_loop()
         elseif self.selection_intention == 'attack' then
             self:combat_phase_atk_cast(self.selected_unit, self.target_unit)
         elseif self.selection_intention == 'attack2' then
@@ -219,8 +243,10 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         elseif self.active_mode == 'selection' and self.selection_intention == 'move' then
             self:confirm_move_selection()
         elseif self.active_mode == 'selection' and self.selection_intention == 'attack' then
-            self:confirm_attack_selection()
+            self:confirm_user_attack_selection()
         end
+    elseif key == 'l' then
+        log(lume.format("[{1}] x = {2}, y = {3}", { self.layer_name, self.cursor_tile_x, self.cursor_tile_y }))
     end
 
     self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
@@ -258,7 +284,7 @@ function SRPGLayer:confirm_pressed_overview()
         elseif menu_option == 'Wait' then
             that.selected_unit.moved_this_turn = true
         elseif menu_option == 'Pass Turn' then
-            that:reset_player_turn()
+            that:start_enemy_turn()
         end
         layer_manager:remove_first()
     end
@@ -289,14 +315,20 @@ function SRPGLayer:confirm_move_selection()
     self.selected_unit.processing_move_queue = true
 end
 
-function SRPGLayer:confirm_attack_selection() 
-    log(lume.format("[{1}] entering combat", { self.layer_name }))
+function SRPGLayer:confirm_user_attack_selection()
     local attacker = self.selected_unit
+    local target_units = lume.filter(self.units, function(u) return u.user_controlled == not attacker.user_controlled and u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
+    local defender = lume.first(target_units)
+    self:confirm_attack_selection(attacker, defender)
+end
+
+function SRPGLayer:confirm_attack_selection(attacker, defender) 
+    self.selected_unit = attacker
+    self.selection_intention = 'attack'
+    log(lume.format("[{1}] entering combat", { self.layer_name }))
     attacker.moved_this_turn = true
     log(lume.format("[{1}] attacker: {2}", { self.layer_name, attacker.unit_name }))
-    local target_units = lume.filter(self.units, function(u) return u.user_controlled == not attacker.user_controlled and u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
-    if #target_units > 0 then
-        local defender = target_units[1]
+    if defender ~= nil then
         self.target_unit = defender
         log(lume.format("[{1}] defender: {2}", { self.layer_name, defender.unit_name }))
         self.active_mode = 'animation_wait'
@@ -395,9 +427,13 @@ end
 
 function SRPGLayer:combat_phase_ended(attacker, defender)
     log("11 END")
-    -- perform cleanup and regain control
-    self.active_mode = 'overview'
-    self:populate_hover_ui()
+    if attacker.user_controlled == true then
+        -- perform cleanup and regain control
+        self.active_mode = 'overview'
+        self:populate_hover_ui()
+    else
+        self:enemy_turn_loop()
+    end
 end
 
 function SRPGLayer:viable_attack_tiles(unit)
@@ -456,4 +492,54 @@ end
 
 function SRPGLayer:animate_hp_hit(hp)
     self.hover_ui.to_hp = hp
+end
+
+function SRPGLayer:start_enemy_turn()
+    self.active_mode = 'animation_wait'
+    local enemy_units = lume.filter(self.units, function(u) return u.user_controlled == false end)
+    lume.each(enemy_units, function(u) u.moved_this_turn = false end)
+    self:enemy_turn_loop()
+end
+
+function SRPGLayer:wait_until_cursor_moved_to_point(x, y)
+    if self.cursor_tile_x ~= x or self.cursor_tile_y ~= y then
+        self.cursor_tile_target_x = x
+        self.cursor_tile_target_y = y
+        self.selection_intention = 'focus_enemy'
+        return true
+    end
+    return false
+end
+
+function SRPGLayer:enemy_turn_loop()
+    local remaining_move_units = lume.filter(self.units, function(u) return u.purge == false and u.user_controlled == false and u.moved_this_turn == false end)
+    if #remaining_move_units <= 0 then
+        self:reset_player_turn()
+        self.active_mode = 'overview'
+    else
+        local unit = lume.first(remaining_move_units)
+        local destinations = self:viable_move_tiles(unit)
+        local attacks = self:viable_attack_tiles(unit)
+        local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
+        local target_result = enemy_ai_target(unit, attacks, player_units)
+        if target_result.type == 'get_closer' then
+            -- move then combat if possible
+            destinations = lume.sort(destinations, function(a, b)
+                return lume.distance(target_result.target.tile_x, target_result.target.tile_y, a.x, a.y) < lume.distance(target_result.target.tile_x, target_result.target.tile_y, b.x, b.y)
+            end)
+            local destination = lume.first(destinations)
+            if self:wait_until_cursor_moved_to_point(destination.x, destination.y) == true then
+                return
+            end
+            unit:queue_move(destination.x, destination.y)
+            self.selected_unit = unit
+            self.selection_intention = 'move'
+            self:confirm_move_selection()
+        else
+            if self:wait_until_cursor_moved_to_point(unit.tile_x, unit.tile_y) == true then
+                return
+            end
+            self:confirm_attack_selection(unit, target_result.target) 
+        end
+    end
 end

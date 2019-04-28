@@ -53,3 +53,29 @@ function attack_formula(attacker_atk, defender_def)
     end
     return math.ceil(theoretical_attack * atk_multiplier)
 end
+
+function enemy_ai_target(attacker, attack_tiles, player_units)
+    local target = nil
+    local type = nil
+
+    -- if there are any attack targets in range, prioritize the lowest health one
+    local viable_attack_targets = lume.filter(player_units, function(pu)
+        return lume.any(attack_tiles, function(at)
+            return at.x == pu.tile_x and at.y == pu.tile_y
+        end)
+    end)
+    if #viable_attack_targets > 0 then
+        viable_attack_targets = lume.sort(viable_attack_targets, "hp")
+        target = lume.last(viable_attack_targets)
+        type = 'adjacent'
+    else
+        -- if there are none in range, use the shortest distance one
+        local sorted = lume.sort(player_units, function(u1, u2)
+            return lume.distance(attacker.tile_x, attacker.tile_y, u1.tile_x, u1.tile_y, true) < lume.distance(attacker.tile_x, attacker.tile_y, u2.tile_x, u2.tile_y, true)
+        end)
+        target = lume.first(sorted)
+        type = 'get_closer'
+    end
+
+    return { target = target, type = type }
+end
