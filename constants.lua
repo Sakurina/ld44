@@ -7,6 +7,8 @@ constants = {
     cursor_move_speed = 0.1,
     unit_move_speed = 0.1,
     animation_frame_length = 0.2,
+    cast_animation_length = 0.3,
+    damage_animation_length = 0.2,
 
     p1_max_hp = 20,
     p1_atk = 16,
@@ -68,5 +70,16 @@ constants = {
     weak_hit_odds = 15,
 
     miss_hit_mult = 0,
-    miss_hit_odds = 15
+    miss_hit_odds = 15,
+
+    hover_ui_x = 16,
+    hover_ui_y = 576,
+    hover_ui_width = 1248,
+    hover_ui_height = 128,
+
+    hover_ui_hpbar_x = 16,
+    hover_ui_hpbar_y = 568,
+    hover_ui_hpbar_width = 1248,
+    hover_ui_hpbar_height = 8,
+    hover_ui_hpbar_speed = 0.25
 }

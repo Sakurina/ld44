@@ -5,19 +5,20 @@ function SRPGLayer:new()
     self.game_ended = false
     self.layer_name = "SRPGLayer"
     self.active_mode = 'overview'
+    self.hover_ui = nil
 
     -- cursor placement
-    self.cursor_tile_x = 0
-    self.cursor_tile_y = 0
-    self.cursor_tile_target_x = 0
-    self.cursor_tile_target_y = 0
+    self.cursor_tile_x = 8
+    self.cursor_tile_y = 14
+    self.cursor_tile_target_x = 8
+    self.cursor_tile_target_y = 14
     self.cursor_tile_anim_accumulator = 0
 
     -- map loading and dimensions
-    self.map_img_file = 'maps/testmap.png'
+    self.map_img_file = 'gfx/map/1-1.png'
     self.map_img = love.graphics.newImage(self.map_img_file)
-    self.map_img_width = 1280
-    self.map_img_height = 1280
+    self.map_img_width = 1944
+    self.map_img_height = 696
     camera:setBounds(0, 0, self.map_img_width * constants.pixel_integer_scale, self.map_img_height * constants.pixel_integer_scale)
     self.tile_width_count = self.map_img_width / constants.pixel_tile_width
     self.tile_height_count = self.map_img_height / constants.pixel_tile_height
@@ -31,11 +32,12 @@ function SRPGLayer:new()
 
     -- units and animations
     self.units = {}
-    table.insert(self.units, P1Unit(2,2))
-    table.insert(self.units, U1Unit(3,3))
-    table.insert(self.units, U2Unit(2,3))
-    table.insert(self.units, E2Unit(5,4))
-    table.insert(self.units, E4Unit(6,3))
+    table.insert(self.units, P1Unit(8,14))
+    table.insert(self.units, U1Unit(7,13))
+    table.insert(self.units, U2Unit(7,15))
+    table.insert(self.units, E2Unit(18,14))
+    table.insert(self.units, E4Unit(19,13))
+    table.insert(self.units, E5Unit(19,15))
 end
 
 -- CALLBACKS
@@ -83,20 +85,30 @@ function SRPGLayer:draw()
     love.graphics.rectangle('fill', cursor_x, cursor_y, tile_width_px, tile_height_px)
 
     camera:unset()
-
-    -- draw UI?
 end
 
 function SRPGLayer:update(dt)
+    if self.paused == true then
+        return
+    end
     if self.game_ended == true then
         return
     end
+    if self.hover_ui == nil and not layer_manager:topmost():is(TransitionLayer) then
+        self.hover_ui = HoverUILayer()
+        layer_manager:prepend(self.hover_ui)
+        self:populate_hover_ui()
+    end
+
     self.units = lume.filter(self.units, function(u) return u.purge == false end)
     local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
     local enemy_units = lume.filter(self.units, function(u) return u.user_controlled == false end)
     if #player_units <= 0 then
         self.game_ended = true
         log(lume.format("[{1}] game over (all friendly units dead)", { self.layer_name }))
+        if self.hover_ui ~= nil then
+            layer_manager:remove_first()
+        end
         local win_layer = LoseLayer()
         layer_manager:transition(self, win_layer)
         return
@@ -104,23 +116,44 @@ function SRPGLayer:update(dt)
     if #enemy_units <= 0 then
         self.game_ended = true
         log(lume.format("[{1}] you win (all enemy units dead)", { self.layer_name }))
+        if self.hover_ui ~= nil then
+            layer_manager:remove_first()
+        end
         local lose_layer = WinLayer()
         layer_manager:transition(self, lose_layer)
         return
     end
-    if self.active_mode == 'animation_wait' and self.selection_intention == 'move' then
-        if self.selected_unit ~= nil and self.selected_unit.processing_move_queue == false then
-            local viable_attacks = self:viable_attack_tiles(self.selected_unit)
-            if #viable_attacks > 0 then
-                self.active_mode = 'selection'
-                self.selection_intention = 'attack'
-                self.allowed_tiles = viable_attacks
-            else
-                self.active_mode = 'overview'
-                self.selected_unit = nil
+    if self.active_mode == 'animation_wait' then
+        if self.selection_intention == 'move' then
+            if self.selected_unit ~= nil and self.selected_unit.processing_move_queue == false then
+                local viable_attacks = self:viable_attack_tiles(self.selected_unit)
+                if #viable_attacks > 0 then
+                    self.active_mode = 'selection'
+                    self.selection_intention = 'attack'
+                    self.allowed_tiles = viable_attacks
+                else
+                    self.active_mode = 'overview'
+                    self.selected_unit = nil
+                end
+                self:populate_hover_ui()
             end
+        elseif self.selection_intention == 'attack' then
+            self:combat_phase_atk_cast(self.selected_unit, self.target_unit)
+        elseif self.selection_intention == 'attack2' then
+            self:combat_phase_atk_receive(self.selected_unit, self.target_unit)
+        elseif self.selection_intention == 'attack3' then
+            self:combat_phase_post_atk(self.selected_unit, self.target_unit)
+        elseif self.selection_intention == 'attack4' and self.cursor_tile_x == self.cursor_tile_target_x and self.cursor_tile_y == self.cursor_tile_target_y then
+            self:combat_phase_retaliation_damage(self.selected_unit, self.target_unit)
+        elseif self.selection_intention == 'attack5' then
+            self:combat_phase_ret_cast(self.selected_unit, self.target_unit)
+        elseif self.selection_intention == 'attack6' then
+            self:combat_phase_ret_receive(self.selected_unit, self.target_unit)
+        elseif self.selection_intention == 'attack7' then
+            self:combat_phase_post_ret(self.selected_unit, self.target_unit)
         end
     end
+    
     local window_width = love.graphics.getWidth()
     local window_height = love.graphics.getHeight()
     local cursor_x = x_for_tile(self.cursor_tile_x)
@@ -137,6 +170,8 @@ function SRPGLayer:update(dt)
             self.cursor_tile_x = self.cursor_tile_target_x
             self.cursor_tile_y = self.cursor_tile_target_y
             self.cursor_tile_anim_accumulator = 0
+            log(lume.format("[{1}] x={2}, y={3}", { self.layer_name, self.cursor_tile_x, self.cursor_tile_y }))
+            self:populate_hover_ui()
         end
     end
 
@@ -182,12 +217,6 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         elseif self.active_mode == 'selection' and self.selection_intention == 'attack' then
             self:confirm_attack_selection()
         end
-    elseif key == '1' then
-        lume.each(self.units, function(u) u.active_animation = 'walk_animation' end)
-    elseif key == '2' then
-        lume.each(self.units, function(u) u.active_animation = 'cast_animation' end)
-    elseif key == '3' then
-        lume.each(self.units, function(u) u.active_animation = 'damage_animation' end)
     elseif key == '4' then
         self:reset_player_turn()
     end
@@ -237,29 +266,105 @@ function SRPGLayer:confirm_attack_selection()
     local target_units = lume.filter(self.units, function(u) return u.user_controlled == not attacker.user_controlled and u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
     if #target_units > 0 then
         local defender = target_units[1]
+        self.target_unit = defender
         log(lume.format("[{1}] defender: {2}", { self.layer_name, defender.unit_name }))
-        local damage = attack_formula(attacker.atk, defender.def)
-        log(lume.format("[{1}] {2} deals {4} damage to {3}", { self.layer_name, attacker.unit_name, defender.unit_name, damage }))
-        defender.hp = defender.hp - damage
-        if defender.hp <= 0 then
-            defender.purge = true
-            log(lume.format("[{1}] {2} has died", { self.layer_name, defender.unit_name }))
-        else
-            log(lume.format("[{1}] {2} has {3} HP remaining", { self.layer_name, defender.unit_name, defender.hp }))
-            local retaliation = attack_formula(defender.atk, attacker.def)
-            attacker.hp = attacker.hp - retaliation
-            log(lume.format("[{1}] {2} deals {4} damage to {3} in retaliation", { self.layer_name, defender.unit_name, attacker.unit_name, retaliation }))
-            if attacker.hp <= 0 then
-                attacker.purge = true
-                log(lume.format("[{1}] {2} has died", { self.layer_name, attacker.unit_name }))
-            else
-                log(lume.format("[{1} {2} has {3} HP remaining", { self.layer_name, attacker.unit_name, attacker.hp }))
-            end
-        end
+        self.active_mode = 'animation_wait'
+        self:combat_phase_initial_damage(attacker, defender)
     else
         log(lume.format("[{1}] no unit targeted", { self.layer_name }))
+        self:combat_phase_ended(attacker, nil)
     end
-    log(lume.format("[{1}] exiting combat", { self.layer_name }))
+end
+
+function SRPGLayer:combat_phase_initial_damage(attacker, defender)
+    -- Deal the initial damage
+    local damage = attack_formula(attacker.atk, defender.def)
+    log(lume.format("[{1}] {2} deals {4} damage to {3}", { self.layer_name, attacker.unit_name, defender.unit_name, damage }))
+    defender.hp = defender.hp - damage
+end
+
+function SRPGLayer:combat_phase_atk_cast(attacker, defender)
+    -- Attacker casts spell
+    local that = self
+    attacker:enter_cast_animation(function() 
+        that.selection_intention = 'attack2' 
+    end)
+end
+
+function SRPGLayer:combat_phase_atk_receive(attacker, defender)
+    -- Defender receives damage, attacker returns to normal
+    local that = self
+    attacker.active_animation = 'walk_animation'
+    defender:enter_damage_animation(function()
+        defender.active_animation = 'walk_animation'
+        that.selection_intention = 'attack3'
+        that:animate_hp_hit(defender.hp)
+    end)
+end
+
+function SRPGLayer:combat_phase_post_atk(attacker, defender)
+    -- If defender should be dead, purge the unit from storage
+    -- Otherwise, restore the defender's walk animation and move to next phase
+    if defender.hp <= 0 then
+        defender.purge = true
+        self:combat_phase_ended(attacker, defender)
+    else
+        self:combat_phase_atk_cursor_move(attacker, defender)
+    end
+end
+
+function SRPGLayer:combat_phase_atk_cursor_move(attacker, defender)
+    -- Move the cursor to focus on the defender's retaliation damage
+    self.cursor_tile_target_x = attacker.tile_x
+    self.cursor_tile_target_y = attacker.tile_y
+    self.selection_intention = 'attack4'
+end
+
+function SRPGLayer:combat_phase_retaliation_damage(attacker, defender)
+    -- Deal the initial damage
+    local damage = attack_formula(defender.atk, attacker.def)
+    log(lume.format("[{1}] {2} deals {4} damage to {3}", { self.layer_name, attacker.unit_name, defender.unit_name, damage }))
+    attacker.hp = attacker.hp - damage
+    self.selection_intention = 'attack5'
+end
+
+function SRPGLayer:combat_phase_ret_cast(attacker, defender)
+    log("7")
+    -- Defender casts spell
+    defender.active_animation = 'cast_animation'
+    self.selection_intention = 'attack6'
+end
+
+function SRPGLayer:combat_phase_ret_receive(attacker, defender)
+    log("8")
+    -- Attacker receives damage, defender returns to normal
+    defender.active_animation = 'walk_animation'
+    attacker.active_animation = 'damage_animation'
+    self:animate_hp_hit(attacker.hp)
+    self.selection_intention = 'attack7'
+end
+
+function SRPGLayer:combat_phase_post_ret(attacker, defender)
+    log("9")
+    if attacker.hp <= 0 then
+        attacker.purge = true
+        self:combat_phase_ended(attacker, defender)
+    else
+        attacker.active_animation = 'walk_animation'
+        self:combat_phase_ret_cursor_move(attacker, defender)
+    end
+end
+
+function SRPGLayer:combat_phase_ret_cursor_move(attacker, defender)
+    log("10")
+    self.cursor_tile_target_x = attacker.tile_x
+    self.cursor_tile_target_y = attacker.tile_y
+    self:combat_phase_ended(attacker, defender)
+end
+
+function SRPGLayer:combat_phase_ended(attacker, defender)
+    log("11 END")
+    -- perform cleanup and regain control
     self.active_mode = 'overview'
 end
 
@@ -297,4 +402,22 @@ end
 function SRPGLayer:reset_player_turn()
     local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
     lume.each(player_units, function(u) u.moved_this_turn = false end)
+end
+
+function SRPGLayer:populate_hover_ui()
+    local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
+    if #units > 0 then
+        local u = units[1]
+        self.hover_ui.show_ui = true
+        self.hover_ui.max_hp = u.max_hp
+        self.hover_ui.from_hp = u.hp
+        self.hover_ui.to_hp = u.hp
+        self.hover_ui.unit_name = u.unit_name
+    else
+        self.hover_ui.show_ui = false
+    end
+end
+
+function SRPGLayer:animate_hp_hit(hp)
+    self.hover_ui.to_hp = hp
 end

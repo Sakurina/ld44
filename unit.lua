@@ -12,6 +12,11 @@ function Unit:new(tile_x, tile_y)
     self.walk_animation = nil
     self.cast_animation = nil
     self.damage_animation = nil
+    self.cast_animation_callback = nil
+    self.damage_animation_callback = nil
+    self.cast_animation_accumulator = 0
+    self.damage_animation_accumulator = 0
+
     -- Movement
     self.move_range = 0
     self.tile_x = tile_x
@@ -24,6 +29,7 @@ function Unit:new(tile_x, tile_y)
     self.move_queue = {}
     self.processing_move_queue = false
     self.moved_this_turn = false
+
     -- Combat math
     self.hp = 0
     self.atk = 0
@@ -40,6 +46,22 @@ function Unit:update(dt)
         self.tile_y = self.tile_target_y
         self.tile_move_accumulator = 0
     end
+    if self.active_animation == 'cast_animation' and self.cast_animation_callback ~= nil then
+        self.cast_animation_accumulator = self.cast_animation_accumulator + dt
+        if self.cast_animation_accumulator >= constants.cast_animation_length then
+            self.cast_animation_accumulator = 0
+            self.cast_animation_callback()
+            self.cast_animation_callback = nil
+        end
+    elseif self.active_animation == 'damage_animation' and self.damage_animation_callback ~= nil then
+        self.damage_animation_accumulator = self.damage_animation_accumulator + dt
+        if self.damage_animation_accumulator >= constants.damage_animation_length then
+            self.cast_animation_accumulator = 0
+            self.damage_animation_callback()
+            self.damage_animation_callback = nil
+        end
+    end
+
     if self.processing_move_queue == true then
         self:process_move_queue()
     end
@@ -107,4 +129,14 @@ function Unit:raw_allowed_tiles()
         table.insert(result, { x = self.tile_x + x, y = self.tile_y })
     end
     return result
+end
+
+function Unit:enter_cast_animation(callback)
+    self.cast_animation_callback = callback
+    self.active_animation = 'cast_animation'
+end
+
+function Unit:enter_damage_animation(callback)
+    self.damage_animation_callback = callback
+    self.active_animation = 'damage_animation'
 end

@@ -15,6 +15,7 @@ function E3Unit:new(x, y)
     self.move_range = constants.e3_move_range
 
     -- Combat math
+    self.max_hp = constants.e3_max_hp
     self.hp = constants.e3_max_hp
     self.atk = constants.e3_atk
     self.def = constants.e3_def

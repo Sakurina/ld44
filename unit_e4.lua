@@ -15,6 +15,7 @@ function E4Unit:new(x, y)
     self.move_range = constants.e4_move_range
 
     -- Combat math
+    self.max_hp = constants.e4_max_hp
     self.hp = constants.e4_max_hp
     self.atk = constants.e4_atk
     self.def = constants.e4_def

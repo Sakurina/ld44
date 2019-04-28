@@ -15,6 +15,7 @@ function U3Unit:new(x, y)
     self.move_range = constants.u3_move_range
 
     -- Combat math
+    self.max_hp = constants.u3_max_hp
     self.hp = constants.u3_max_hp
     self.atk = constants.u3_atk
     self.def = constants.u3_def

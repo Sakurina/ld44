@@ -15,6 +15,7 @@ function E2Unit:new(x, y)
     self.move_range = constants.e2_move_range
 
     -- Combat math
+    self.max_hp = constants.e2_max_hp
     self.hp = constants.e2_max_hp
     self.atk = constants.e2_atk
     self.def = constants.e2_def
