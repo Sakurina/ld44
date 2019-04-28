@@ -40,7 +40,8 @@ function SRPGLayer:new()
     self.enemy_blue_mana = 0
 
     self.units = {}
-    table.insert(self.units, P1Unit(8,14))
+    table.insert(self.units, P1Unit(8,13))
+    table.insert(self.units, P2Unit(8,15))
     table.insert(self.units, U1Unit(7,13))
     table.insert(self.units, U2Unit(7,15))
     table.insert(self.units, E2Unit(18,14))
