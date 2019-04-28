@@ -90,5 +90,33 @@ constants = {
     unit_menu_height_per_item = 56,
     unit_menu_bottom_padding = 16,
 
-    big_font = love.graphics.newFont("deps/m5x7.ttf", 72)
+    big_font = love.graphics.newFont("deps/m5x7.ttf", 72),
+
+    ui_bg_r = .36,
+    ui_bg_g = .56,
+    ui_bg_b = .76,
+
+    ui_border_r = .08,
+    ui_border_g = .20,
+    ui_border_b = .39,
+
+    ui_text_r = .14,
+    ui_text_g = .13,
+    ui_text_b = .20,
+
+    ui_deem_r = .08,
+    ui_deem_g = .20,
+    ui_deem_b = .39,
+
+    ui_em_r = .89,
+    ui_em_g = .90,
+    ui_em_b = 1,
+
+    ui_hp_fill_r = .71,
+    ui_hp_fill_g = .12,
+    ui_hp_fill_b = .16,
+    
+    ui_hp_empty_r = .73,
+    ui_hp_empty_g = .75,
+    ui_hp_empty_b = .98
 }

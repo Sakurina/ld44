@@ -23,13 +23,13 @@ function HoverUILayer:draw()
     end
 
     -- background
-    love.graphics.setColor(0, 0, 0, 0.5)
+    love.graphics.setColor(constants.ui_border_r, constants.ui_border_g, constants.ui_border_b, 1.0)
     love.graphics.rectangle('fill',
         constants.hover_ui_hpbar_x - constants.pixel_integer_scale,
         constants.hover_ui_hpbar_y - constants.pixel_integer_scale,
         constants.hover_ui_width + 2 * constants.pixel_integer_scale,
         constants.hover_ui_hpbar_height + constants.hover_ui_height + 2 * constants.pixel_integer_scale)
-    love.graphics.setColor(1, 1, 0, 1)
+    love.graphics.setColor(constants.ui_bg_r, constants.ui_bg_g, constants.ui_bg_b, 1.0)
     love.graphics.rectangle('fill', 
         constants.hover_ui_x, 
         constants.hover_ui_y, 
@@ -37,7 +37,7 @@ function HoverUILayer:draw()
         constants.hover_ui_height)
 
     -- hp bar (empty)
-    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setColor(constants.ui_hp_empty_r, constants.ui_hp_empty_g, constants.ui_hp_empty_b, 1.0)
     love.graphics.rectangle('fill',
         constants.hover_ui_hpbar_x,
         constants.hover_ui_hpbar_y,
@@ -54,7 +54,7 @@ function HoverUILayer:draw()
     if fill_fraction < 0 then
         fill_fraction = 0
     end
-    love.graphics.setColor(1, 0, 0, 1)
+    love.graphics.setColor(constants.ui_hp_fill_r, constants.ui_hp_fill_g, constants.ui_hp_fill_b, 1)
     love.graphics.rectangle('fill',
         constants.hover_ui_hpbar_x,
         constants.hover_ui_hpbar_y,
@@ -63,7 +63,7 @@ function HoverUILayer:draw()
 
     -- unit name
     love.graphics.setFont(constants.big_font)
-    love.graphics.setColor(0, 0, 0, 1)
+    love.graphics.setColor(constants.ui_text_r, constants.ui_text_g, constants.ui_text_b, 1.0)
     love.graphics.print(self.unit_name, constants.hover_ui_x + 16 , constants.hover_ui_y + 2)
 
     local def_x = constants.hover_ui_x + constants.hover_ui_width - 16 - 55
@@ -73,11 +73,11 @@ function HoverUILayer:draw()
     local hp_x = atk_lbl_x - 16 - 55
     local hp_lbl_x = hp_x - 16 - 55
 
-    love.graphics.setColor(0.3, 0.3, 0.3, 1)
+    love.graphics.setColor(constants.ui_deem_r, constants.ui_deem_g, constants.ui_deem_b, 1.0)
     love.graphics.print("DEF", def_lbl_x, constants.hover_ui_y + 2)
     love.graphics.print("ATK", atk_lbl_x, constants.hover_ui_y + 2)
     love.graphics.print("HP", hp_lbl_x, constants.hover_ui_y + 2)
-    love.graphics.setColor(0, 0, 0, 1)
+    love.graphics.setColor(constants.ui_text_r, constants.ui_text_g, constants.ui_text_b, 1.0)
     love.graphics.print(self.def, def_x, constants.hover_ui_y + 2)
     love.graphics.print(self.atk, atk_x, constants.hover_ui_y + 2)
     love.graphics.print(self.from_hp, hp_x, constants.hover_ui_y + 2)

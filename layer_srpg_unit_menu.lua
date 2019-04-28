@@ -14,13 +14,13 @@ end
 
 function UnitSelectMenuLayer:draw()
     local height = constants.unit_menu_height_per_item * #(self.items) + constants.unit_menu_bottom_padding
-    love.graphics.setColor(0, 0, 0, 0.5)
+    love.graphics.setColor(constants.ui_border_r, constants.ui_border_g, constants.ui_border_b, 1.0)
     love.graphics.rectangle('fill', 
         constants.unit_menu_x - 4, 
         constants.unit_menu_y - 4, 
         constants.unit_menu_width + 8, 
         height + 8)
-    love.graphics.setColor(1, 1, 0, 1)
+    love.graphics.setColor(constants.ui_bg_r, constants.ui_bg_g, constants.ui_bg_b, 1.0)
     love.graphics.rectangle('fill', 
         constants.unit_menu_x, 
         constants.unit_menu_y, 
@@ -30,9 +30,9 @@ function UnitSelectMenuLayer:draw()
     love.graphics.setFont(constants.big_font)
     for i = 1, #self.items do
         if i == self.selected_index then
-            love.graphics.setColor(1, 0, 0, 1)
+            love.graphics.setColor(constants.ui_em_r, constants.ui_em_g, constants.ui_em_b, 1.0)
         else
-            love.graphics.setColor(0, 0, 0, 1)
+            love.graphics.setColor(constants.ui_text_r, constants.ui_text_g, constants.ui_text_b, 1.0)
         end
         local y = 16 + (i-1) * constants.unit_menu_height_per_item
         love.graphics.print(self.items[i], 32, y)

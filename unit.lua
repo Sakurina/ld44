@@ -35,6 +35,12 @@ function Unit:new(tile_x, tile_y)
     self.hp = 0
     self.atk = 0
     self.def = 0
+
+    -- Special abilities
+    self.has_doublestr = false
+    self.has_reflect = false
+    self.has_healaura = false
+    self.has_hungering = false
 end
 
 -- UPDATE RUN LOOP

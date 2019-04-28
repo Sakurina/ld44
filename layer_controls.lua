@@ -10,15 +10,15 @@ end
 -- CALLBACKS
 
 function ControlsLayer:draw()
-    love.graphics.setColor(0, 1, 0)
+    love.graphics.setColor(constants.ui_bg_r, constants.ui_bg_g, constants.ui_bg_b, 1.0)
     love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
 
     local i = 1
     for k, v in pairs(self.bindings) do
         if i == self.selected_index then
-            love.graphics.setColor(1, 0, 0)
+            love.graphics.setColor(constants.ui_em_r, constants.ui_em_g, constants.ui_em_b, 1.0)
         else
-            love.graphics.setColor(1, 1, 1)
+            love.graphics.setColor(constants.ui_text_r, constants.ui_text.g, constants.ui_text_b, 1.0)
         end
         local y = 10 + i * 35
         love.graphics.print(k, 10, y)

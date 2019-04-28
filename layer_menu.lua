@@ -10,13 +10,13 @@ end
 -- CALLBACKS
 
 function MenuLayer:draw()
-    love.graphics.setColor(0, 0, 1)
+    love.graphics.setColor(constants.ui_bg_r, constants.ui_bg_g, constants.ui_bg_b, 1.0)
     love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
     for i = 1, #self.items do
         if i == self.selected_index then
-            love.graphics.setColor(1, 0, 0)
+            love.graphics.setColor(constants.ui_em_r, constants.ui_em_g, constants.ui_em_b, 1.0)
         else
-            love.graphics.setColor(1, 1, 1)
+            love.graphics.setColor(constants.ui_text_r, constants.ui_text_g, constants.ui_text_b, 1.0)
         end
         local y = 10 + i * 35
         love.graphics.print(self.items[i], 10, y)
