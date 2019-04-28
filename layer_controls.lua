@@ -18,7 +18,7 @@ function ControlsLayer:draw()
         if i == self.selected_index then
             love.graphics.setColor(constants.ui_em_r, constants.ui_em_g, constants.ui_em_b, 1.0)
         else
-            love.graphics.setColor(constants.ui_text_r, constants.ui_text.g, constants.ui_text_b, 1.0)
+            love.graphics.setColor(constants.ui_deem_r, constants.ui_deem.g, constants.ui_deem_b, 1.0)
         end
         local y = 10 + i * 35
         love.graphics.print(k, 10, y)
