@@ -32,6 +32,13 @@ function SRPGLayer:new()
     self.target_unit = nil
 
     -- units and animations
+    self.player_red_mana = 0
+    self.player_green_mana = 0
+    self.player_blue_mana = 0
+    self.enemy_red_mana = 0
+    self.enemy_green_mana = 0
+    self.enemy_blue_mana = 0
+
     self.units = {}
     table.insert(self.units, P1Unit(8,14))
     table.insert(self.units, U1Unit(7,13))
@@ -247,6 +254,8 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         end
     elseif key == 'l' then
         log(lume.format("[{1}] x = {2}, y = {3}", { self.layer_name, self.cursor_tile_x, self.cursor_tile_y }))
+    elseif key == 'm' then
+        self:mana_report()
     end
 
     self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
@@ -272,21 +281,35 @@ end
 
 function SRPGLayer:confirm_pressed_overview()
     local that = self
+    local mana_callback = function(ability)
+
+    end
     local menu_callback = function(menu_option)
         if menu_option == 'Move' then
             that.active_mode = 'selection'
             that.selection_intention = 'move'
             that.allowed_tiles = that:viable_move_tiles(that.selected_unit)
+            layer_manager:remove_first()
         elseif menu_option == 'Attack' then
             that.active_mode = 'selection'
             that.selection_intention = 'attack'
             that.allowed_tiles = that:viable_attack_tiles(that.selected_unit)
+            layer_manager:remove_first()
+        elseif menu_option == 'Sacrifice' then
+            that:sacrifice_unit(that.selected_unit)
+            layer_manager:remove_first()
         elseif menu_option == 'Wait' then
             that.selected_unit.moved_this_turn = true
+            layer_manager:remove_first()
         elseif menu_option == 'Pass Turn' then
             that:start_enemy_turn()
+            layer_manager:remove_first()
+        elseif menu_option == 'Special' then
+            layer_manager:remove_first()
+            local mana_menu = ManaAbilityMenuLayer(that.selected_unit, mana_callback)
+            layer_manager:prepend(mana_menu)
         end
-        layer_manager:remove_first()
+        
     end
     local unit_menu = nil
     local units = lume.filter(self.units, function(u) return u.tile_x == self.cursor_tile_x and u.tile_y == self.cursor_tile_y end)
@@ -542,4 +565,21 @@ function SRPGLayer:enemy_turn_loop()
             self:confirm_attack_selection(unit, target_result.target) 
         end
     end
+end
+
+function SRPGLayer:sacrifice_unit(unit)
+    local key = ''
+    if unit.user_controlled == true then
+        key = lume.format("player_{1}_mana", { unit.mana_color })
+    else
+        key = lume.format("enemy_{1}_mana", { unit.mana_color })
+    end
+    self[key] = self[key] + 1
+    log(lume.format("[{1}] sacrificed {2}, added 1 to {3} (now at {4})", { self.layer_name, unit.unit_name, key, self[key]}))
+    unit.hp = 0
+    unit.purge = true
+end
+
+function SRPGLayer:mana_report()
+    log(lume.format("[{1}] mana: player ({2}/{3}/{4}), enemy ({5}/{6}/{7})", { self.layer_name, self.player_red_mana, self.player_green_mana, self.player_blue_mana, self.enemy_red_mana, self.enemy_green_mana, self.enemy_blue_mana}))
 end

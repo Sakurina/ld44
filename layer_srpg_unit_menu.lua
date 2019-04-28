@@ -32,7 +32,7 @@ function UnitSelectMenuLayer:draw()
         if i == self.selected_index then
             love.graphics.setColor(constants.ui_em_r, constants.ui_em_g, constants.ui_em_b, 1.0)
         else
-            love.graphics.setColor(constants.ui_text_r, constants.ui_text_g, constants.ui_text_b, 1.0)
+            love.graphics.setColor(constants.ui_deem_r, constants.ui_deem_g, constants.ui_deem_b, 1.0)
         end
         local y = 16 + (i-1) * constants.unit_menu_height_per_item
         love.graphics.print(self.items[i], 32, y)

@@ -73,7 +73,7 @@ function HoverUILayer:draw()
     local hp_x = atk_lbl_x - 16 - 55
     local hp_lbl_x = hp_x - 16 - 55
 
-    love.graphics.setColor(constants.ui_deem_r, constants.ui_deem_g, constants.ui_deem_b, 1.0)
+    love.graphics.setColor(constants.ui_em_r, constants.ui_em_g, constants.ui_em_b, 1.0)
     love.graphics.print("DEF", def_lbl_x, constants.hover_ui_y + 2)
     love.graphics.print("ATK", atk_lbl_x, constants.hover_ui_y + 2)
     love.graphics.print("HP", hp_lbl_x, constants.hover_ui_y + 2)

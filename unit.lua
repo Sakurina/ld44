@@ -10,6 +10,8 @@ function Unit:new(tile_x, tile_y)
     self.sprite_sheet = nil 
     self.active_animation = 'walk_animation'
     self.has_feet = false
+    self.mana_color = 'none'
+    
     self.walk_animation = nil
     self.cast_animation = nil
     self.damage_animation = nil

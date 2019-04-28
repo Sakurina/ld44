@@ -13,6 +13,8 @@ function P1Unit:new(x, y)
     self.damage_animation = anim8.newAnimation(loaded_sheet('5-5', 1), constants.animation_frame_length)
     self.walk_animation:pauseAtStart()
     
+    self.has_doublestr = true
+    
     -- Movement
     self.move_range = constants.p1_move_range
 

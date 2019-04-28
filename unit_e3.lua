@@ -3,6 +3,7 @@ E3Unit = Unit:extend()
 function E3Unit:new(x, y)
     E3Unit.super.new(self, x, y)
     self.unit_name = "E3"
+    self.mana_color = 'red'
     self.user_controlled = false
     self.sprite_sheet = love.graphics.newImage('gfx/enemy/e3_1.png')
     local loaded_sheet = anim8.newGrid(48, 48, self.sprite_sheet:getWidth(), self.sprite_sheet:getHeight(), 0, 0)
