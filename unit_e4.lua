@@ -2,7 +2,7 @@ E4Unit = Unit:extend()
 
 function E4Unit:new(x, y)
     E4Unit.super.new(self, x, y)
-    self.unit_name = "E4"
+    self.unit_name = "Martin"
     self.mana_color = 'green'
     self.user_controlled = false
     self.sprite_sheet = love.graphics.newImage('gfx/enemy/e4_1.png')
@@ -11,6 +11,7 @@ function E4Unit:new(x, y)
     self.cast_animation = anim8.newAnimation(loaded_sheet('4-4', 1), constants.animation_frame_length)
     self.damage_animation = anim8.newAnimation(loaded_sheet('5-5', 1), constants.animation_frame_length)
     self.walk_animation:pauseAtStart()
+    self.facing_left = true
     
     -- Movement
     self.move_range = constants.e4_move_range

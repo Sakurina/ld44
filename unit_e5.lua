@@ -2,7 +2,7 @@ E5Unit = Unit:extend()
 
 function E5Unit:new(x, y)
     E5Unit.super.new(self, x, y)
-    self.unit_name = "E5"
+    self.unit_name = "Brad"
     self.mana_color = 'blue'
     self.user_controlled = false
     self.sprite_sheet = love.graphics.newImage('gfx/enemy/e5_1.png')
@@ -11,6 +11,7 @@ function E5Unit:new(x, y)
     self.cast_animation = anim8.newAnimation(loaded_sheet('4-4', 1), constants.animation_frame_length)
     self.damage_animation = anim8.newAnimation(loaded_sheet('5-5', 1), constants.animation_frame_length)
     self.walk_animation:pauseAtStart()
+    self.facing_left = true
     
     -- Movement
     self.move_range = constants.e5_move_range

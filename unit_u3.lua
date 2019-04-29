@@ -2,7 +2,7 @@ U3Unit = Unit:extend()
 
 function U3Unit:new(x, y)
     U3Unit.super.new(self, x, y)
-    self.unit_name = "U3"
+    self.unit_name = "Dad"
     self.mana_color = 'green'
     self.user_controlled = true
     self.sprite_sheet = love.graphics.newImage('gfx/player/u3_1.png')

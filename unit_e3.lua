@@ -2,7 +2,7 @@ E3Unit = Unit:extend()
 
 function E3Unit:new(x, y)
     E3Unit.super.new(self, x, y)
-    self.unit_name = "E3"
+    self.unit_name = "Wayne"
     self.mana_color = 'red'
     self.user_controlled = false
     self.sprite_sheet = love.graphics.newImage('gfx/enemy/e3_1.png')
