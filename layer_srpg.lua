@@ -208,6 +208,10 @@ function SRPGLayer:update(dt)
             self:combat_phase_ret_cursor_move(self.selected_unit, self.target_unit)
         elseif self.selection_intention == 'attack8' then
             self:combat_phase_ended(self.selected_unit, self.target_unit)
+        elseif self.selection_intention == 'healing_aura_player' then
+            self:player_healing_aura_loop()
+        elseif self.selection_intention == 'healing_aura_enemy' then
+            self.enemy_healing_aura_loop()
         end
     end
     
@@ -621,14 +625,15 @@ function SRPGLayer:start_player_turn()
     end
     -- once move complete, reset state and switch to overview mode
     self:reset_player_turn()
-    self.active_mode = 'overview'
-
 end
 
 function SRPGLayer:reset_player_turn()
     local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
-    lume.each(player_units, function(u) u.moved_this_turn = false end)
-    self:healing_aura_phase(true)
+    lume.each(player_units, function(u) 
+        u.moved_this_turn = false 
+        u.healauraed_this_turn = false
+    end)
+    self:player_healing_aura_loop()
 end
 
 function SRPGLayer:populate_hover_ui()
@@ -654,9 +659,11 @@ end
 function SRPGLayer:start_enemy_turn()
     self.active_mode = 'animation_wait'
     local enemy_units = lume.filter(self.units, function(u) return u.user_controlled == false end)
-    lume.each(enemy_units, function(u) u.moved_this_turn = false end)
-    self:healing_aura_phase(false)
-    self:enemy_turn_loop()
+    lume.each(enemy_units, function(u) 
+        u.moved_this_turn = false 
+        u.healauraed_this_turn = false
+    end)
+    self:enemy_healing_aura_loop()
 end
 
 function SRPGLayer:wait_until_cursor_moved_to_point(x, y, intention)
@@ -725,28 +732,59 @@ function SRPGLayer:mana_report()
     log(lume.format("[{1}] mana: player ({2}/{3}/{4}), enemy ({5}/{6}/{7})", { self.layer_name, self.player_red_mana, self.player_green_mana, self.player_blue_mana, self.enemy_red_mana, self.enemy_green_mana, self.enemy_blue_mana}))
 end
 
-function SRPGLayer:healing_aura_phase(user_controlled)
-    local eligible_units = lume.filter(self.units, function(u) return u.user_controlled == user_controlled and u.has_healaura == true end)
-    if #eligible_units <= 0 then
-        return
-    else
-        lume.each(eligible_units, function(u)
-            local heal_amount = lume.round(u.max_hp * 0.15)
-            log(lume.format("[{1}] healing aura proc: {2} heals for {3}", { self.layer_name, u.unit_name, heal_amount }))
-            u.hp = u.hp + heal_amount
-            if u.hp > u.max_hp then
-                u.hp = u.max_hp
-            end
-        end)
-    end
+
+function SRPGLayer:player_healing_aura_loop()
+    self:healing_aura_loop(true)
 end
 
-function SRPGLayer:healing_aura_animated_phase(user_controlled)
-    -- move cursor to unit to be healed
+function SRPGLayer:enemy_healing_aura_loop()
+    self:healing_aura_loop(false)
+end
 
-    -- update hp
+function SRPGLayer:healing_aura_loop(user_controlled)
+    self.active_mode = 'animation_wait'
+    if user_controlled == true then
+        self.selection_intention = 'healing_aura_player'
+    else
+        self.selection_intention = 'healing_aura_enemy'
+    end
+    local that = self
+    local remaining_eligible_units = lume.filter(self.units, function(u) 
+        return u.user_controlled == user_controlled and u.has_healaura == true and u.healauraed_this_turn == false
+    end)
 
-    -- healspark
+    if #remaining_eligible_units <= 0 then
+        -- exit healing aura phase
+        if user_controlled == true then
+            self.active_mode = 'overview'
+        else
+            self:enemy_turn_loop()
+        end
+    else
+        local unit = lume.first(remaining_eligible_units)
 
-    -- animate hp update
+        -- move cursor to unit position
+        if self:wait_until_cursor_moved_to_point(unit.tile_x, unit.tile_y, self.selection_intention) == true then
+            return
+        end
+
+        -- update hp
+        local heal_amount = lume.round(unit.max_hp * 0.15)
+        log(lume.format("[{1}] healing aura proc: {2} heals for {3}", { self.layer_name, unit.unit_name, heal_amount }))
+        unit.hp = unit.hp + heal_amount
+        if unit.hp > unit.max_hp then
+            unit.hp = unit.max_hp
+        end
+        unit.healauraed_this_turn = true
+
+        -- healspark
+        local target_intention = self.selection_intention
+        self.selection_intention = stall
+        unit:enter_healing_animation(function()
+            -- animate hp update
+            that.hover_ui:animate_to(unit.hp, function()
+                that.selection_intention = target_intention
+            end)
+        end)
+    end
 end

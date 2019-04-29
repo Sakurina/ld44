@@ -100,6 +100,7 @@ function Unit:new(tile_x, tile_y)
     self.move_queue = {}
     self.processing_move_queue = false
     self.moved_this_turn = false
+    self.healauraed_this_turn = false
 
     -- Combat math
     self.hp = 0
