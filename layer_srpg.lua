@@ -434,6 +434,7 @@ end
 
 function SRPGLayer:combat_phase_initial_damage(attacker, defender)
     -- Deal the initial damage
+    self:populate_hover_ui(defender)
     local damage = attack_formula(attacker.atk, defender.def)
 
     if attacker.has_doublestr == true then
@@ -689,7 +690,7 @@ function SRPGLayer:enemy_turn_loop()
         local unit = lume.first(remaining_move_units)
         local destinations = self:viable_move_tiles(unit)
         local attacks = self:viable_attack_tiles(unit)
-        local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
+        local player_units = lume.filter(self.units, function(u) return u.user_controlled == true and u.purge == false end)
         local target_result = enemy_ai_target(unit, attacks, player_units)
         if target_result.type == 'get_closer' then
             -- move then combat if possible
@@ -724,7 +725,7 @@ function SRPGLayer:enemy_turn_loop()
             end
             
         else
-            if self:wait_until_cursor_moved_to_point(unit.tile_x, unit.tile_y, 'focus_enemy') == true then
+            if self:wait_until_cursor_moved_to_point(target_result.target.tile_x, target_result.target.tile_y, 'focus_enemy') == true then
                 return
             end
             self:confirm_attack_selection(unit, target_result.target) 
