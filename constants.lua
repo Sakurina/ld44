@@ -9,7 +9,7 @@ constants = {
     cursor_turbo_speed = 0.05,
     unit_move_speed = 0.3,
     animation_frame_length = 0.2,
-    cast_animation_length = 0.5,
+    cast_animation_length = 1,
     damage_animation_length = 0.5,
 
     p1_max_hp = 20,
