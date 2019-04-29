@@ -8,7 +8,8 @@ constants = {
     cursor_move_speed = 0.1,
     cursor_turbo_speed = 0.05,
     unit_move_speed = 0.3,
-    animation_frame_length = 0.2,
+    walk_animation_frame_length = 0.2,
+    animation_frame_length = 0.1,
     cast_animation_length = 1,
     damage_animation_length = 0.5,
 

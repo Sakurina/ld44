@@ -14,6 +14,8 @@ function Unit:new(tile_x, tile_y)
     local loaded_hitspark_grid = anim8.newGrid(48, 48, self.hitspark_fx_sheet:getWidth(), self.hitspark_fx_sheet:getHeight(), 0, 0)
     self.reflect_fx_sheet = love.graphics.newImage('gfx/fx/reflect.png')
     local loaded_reflect_grid = anim8.newGrid(24, 24, self.reflect_fx_sheet:getWidth(), self.reflect_fx_sheet:getHeight())
+    self.healing_fx_sheet = love.graphics.newImage('gfx/fx/healspark.png')
+    local loaded_healing_grid = anim8.newGrid(13, 13, self.healing_fx_sheet:getWidth(), self.healing_fx_sheet:getHeight())
     self.active_animation = 'walk_animation'
     self.has_feet = false
     self.facing_left = false
@@ -69,6 +71,22 @@ function Unit:new(tile_x, tile_y)
         end)
     self.reflect_animation:pauseAtStart()
     self.reflect_animation_callback = nil
+
+    self.healing_animation = anim8.newAnimation(loaded_healing_grid('1-6', 1),
+        constants.animation_frame_length,
+        function(l)
+            if self.healing_animation_callback ~= nil then
+                self.healing_animation_loops = self.healing_animation_loops + 1
+                if self.healing_animation_loops == 2 then
+                    local cb = self.healing_animation_callback
+                    self.healing_animation_callback = nil
+                    self.healing_animation:pauseAtStart()
+                    self.show_healing_animation = false
+                    cb()
+                end
+            end
+        end)
+    self.healing_animation_callback = nil
 
     -- Movement
     self.move_range = 0
@@ -139,6 +157,9 @@ function Unit:update(dt)
     if self.show_reflect_animation == true then
         self.reflect_animation:update(dt)
     end
+    if self.show_healing_animation == true then
+        self.healing_animation:update(dt)
+    end
 
     if self.processing_move_queue == true then
         self:process_move_queue()
@@ -181,7 +202,19 @@ function Unit:draw()
     if self.show_reflect_animation == true then
         local reflect_x = self.pixel_x + (12*4)
         local reflect_y = self.pixel_y + (12*4)
-        self.reflect_animation:draw(self.reflect_fx_sheet, reflect_x, reflect_y, 0 , constants.pixel_integer_scale, constants.pixel_integer_scale)
+        self.reflect_animation:draw(self.reflect_fx_sheet, reflect_x, reflect_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
+    end
+    if self.show_healing_animation == true then
+        local healing_x = self.pixel_x
+        local healing_y = self.pixel_y
+        if self.healing_animation_loops == 0 then
+            healing_x = healing_x + (11*4)
+            healing_y = healing_y + (11*4)
+        elseif self.healing_animation_loops == 1 then
+            healing_x = healing_x + (48*4) - (11*4) - (13*4)
+            healing_y = healing_y + (48*4) - (11*4) - (13*4)
+        end
+        self.healing_animation:draw(self.healing_fx_sheet, healing_x, healing_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
     end
 end
 
@@ -248,4 +281,11 @@ function Unit:enter_reflect_animation(callback)
     self.show_reflect_animation = true
     self.reflect_animation_callback = callback
     self.reflect_animation:resume()
+end
+
+function Unit:enter_healing_animation(callback)
+    self.healing_animation_loops = 0
+    self.show_healing_animation = true
+    self.healing_animation_callback = callback
+    self.healing_animation:resume()
 end

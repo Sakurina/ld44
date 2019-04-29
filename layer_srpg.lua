@@ -285,6 +285,10 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         log(lume.format("[{1}] x = {2}, y = {3}", { self.layer_name, self.cursor_tile_x, self.cursor_tile_y }))
     elseif not keyrepeat and key == 'm' then
         self:mana_report()
+    elseif not keyrepeat and key == 'f' then
+        self.player_red_mana = 9
+        self.player_green_mana = 9
+        self.player_blue_mana = 9
     end
 
     self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
@@ -493,6 +497,9 @@ function SRPGLayer:combat_phase_atk_receive(attacker, defender)
     end)
     if defender.has_reflect then
         attacker:enter_damage_animation(function() end)
+    end
+    if attacker.has_hungering then
+        attacker:enter_healing_animation(function() end)
     end
 end
 
@@ -728,4 +735,14 @@ function SRPGLayer:healing_aura_phase(user_controlled)
             end
         end)
     end
+end
+
+function SRPGLayer:healing_aura_animated_phase(user_controlled)
+    -- move cursor to unit to be healed
+
+    -- update hp
+
+    -- healspark
+
+    -- animate hp update
 end
