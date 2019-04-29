@@ -12,7 +12,8 @@ function Unit:new(tile_x, tile_y)
     local loaded_sacrifice_grid = anim8.newGrid(48, 48, self.sacrifice_fx_sheet:getWidth(), self.sacrifice_fx_sheet:getHeight(), 0, 0)
     self.hitspark_fx_sheet = love.graphics.newImage('gfx/fx/hitspark.png')
     local loaded_hitspark_grid = anim8.newGrid(48, 48, self.hitspark_fx_sheet:getWidth(), self.hitspark_fx_sheet:getHeight(), 0, 0)
-    
+    self.reflect_fx_sheet = love.graphics.newImage('gfx/fx/reflect.png')
+    local loaded_reflect_grid = anim8.newGrid(24, 24, self.reflect_fx_sheet:getWidth(), self.reflect_fx_sheet:getHeight())
     self.active_animation = 'walk_animation'
     self.has_feet = false
     self.facing_left = false
@@ -26,6 +27,8 @@ function Unit:new(tile_x, tile_y)
     self.cast_animation_accumulator = 0
     self.damage_animation_accumulator = 0
     self.show_sacrifice_animation = false
+    self.show_hitspark_animation = false
+    self.show_reflect_animation = false
 
     self.sacrifice_animation = anim8.newAnimation(loaded_sacrifice_grid('1-5', 1), 
         constants.animation_frame_length,
@@ -35,9 +38,9 @@ function Unit:new(tile_x, tile_y)
                 self.sacrifice_animation_callback = nil
                 self.sacrifice_animation:pauseAtStart()
                 self.show_sacrifice_animation = false
-                self.active_animation = 'walk_animation'
             end
         end)
+    self.sacrifice_animation:pauseAtStart()
     self.sacrifice_animation_callback = nil
 
     self.hitspark_animation = anim8.newAnimation(loaded_hitspark_grid('1-5', 1), 
@@ -48,10 +51,23 @@ function Unit:new(tile_x, tile_y)
                 self.hitspark_animation_callback = nil
                 self.hitspark_animation:pauseAtStart()
                 self.show_hitspark_animation = false
-                self.active_animation = 'walk_animation'
             end
         end)
+    self.hitspark_animation:pauseAtStart()
     self.hitspark_animation_callback = nil
+
+    self.reflect_animation = anim8.newAnimation(loaded_reflect_grid('1-5', 1),
+        constants.animation_frame_length,
+        function(l)
+            if self.reflect_animation_callback ~= nil then
+                self.reflect_animation_callback()
+                self.reflect_animation_callback = nil
+                self.reflect_animation:pauseAtStart()
+                self.show_reflect_animation = false
+            end
+        end)
+    self.reflect_animation:pauseAtStart()
+    self.reflect_animation_callback = nil
 
     -- Movement
     self.move_range = 0
@@ -92,6 +108,9 @@ function Unit:update(dt)
     if self.hitspark_animation.flippedH == not self.facing_left then
         self.hitspark_animation:flipH()
     end
+    if self.reflect_animation.flippedH == not self.facing_left then
+        self.reflect_animation:flipH()
+    end
 
     if self.tile_x ~= self.tile_target_x or self.tile_y ~= self.tile_target_y then
         self.tile_move_accumulator = self.tile_move_accumulator + dt
@@ -115,6 +134,9 @@ function Unit:update(dt)
     end
     if self.show_hitspark_animation == true then
         self.hitspark_animation:update(dt)
+    end
+    if self.show_reflect_animation == true then
+        self.reflect_animation:update(dt)
     end
 
     if self.processing_move_queue == true then
@@ -154,6 +176,11 @@ function Unit:draw()
     end
     if self.show_hitspark_animation == true then
         self.hitspark_animation:draw(self.hitspark_fx_sheet, self.pixel_x, self.pixel_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
+    end
+    if self.show_reflect_animation == true then
+        local reflect_x = self.pixel_x + (12*4)
+        local reflect_y = self.pixel_y + (12*4)
+        self.reflect_animation:draw(self.reflect_fx_sheet, reflect_x, reflect_y, 0 , constants.pixel_integer_scale, constants.pixel_integer_scale)
     end
 end
 
@@ -214,4 +241,10 @@ function Unit:enter_sacrifice_animation(callback)
     self.show_sacrifice_animation = true
     self.sacrifice_animation_callback = callback
     self.sacrifice_animation:resume()
+end
+
+function Unit:enter_reflect_animation(callback)
+    self.show_reflect_animation = true
+    self.reflect_animation_callback = callback
+    self.reflect_animation:resume()
 end

@@ -466,6 +466,9 @@ function SRPGLayer:combat_phase_atk_cast(attacker, defender)
         attacker.active_animation = 'walk_animation'
         that.selection_intention = 'attack2' 
     end)
+    if defender.has_reflect then
+        defender:enter_reflect_animation(function() end)
+    end
 end
 
 function SRPGLayer:combat_phase_atk_receive(attacker, defender)
@@ -479,10 +482,12 @@ function SRPGLayer:combat_phase_atk_receive(attacker, defender)
             that.selection_intention = 'attack3'
         end)
     end)
+    if defender.has_reflect then
+        attacker:enter_damage_animation(function() end)
+    end
 end
 
 function SRPGLayer:combat_phase_post_atk(attacker, defender)
-    log("post atk")
     -- If defender should be dead, purge the unit from storage
     -- Otherwise, restore the defender's walk animation and move to next phase
     if defender.hp <= 0 then
@@ -494,7 +499,6 @@ function SRPGLayer:combat_phase_post_atk(attacker, defender)
 end
 
 function SRPGLayer:combat_phase_atk_cursor_move(attacker, defender)
-    log("atk cursor move")
     if self:wait_until_cursor_moved_to_point(attacker.tile_x, attacker.tile_y, 'attack3.5') == true then
         return
     end
