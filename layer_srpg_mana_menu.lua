@@ -4,6 +4,14 @@ function ManaAbilityMenuLayer:new(unit, callback)
     ManaAbilityMenuLayer.super.new(self)
     self.layer_name = "ManaAbilityMenuLayer"
     self.abilities = {}
+    self.icons_sheet = love.graphics.newImage('gfx/gui/icons_1.png')
+    local loaded_sheet = anim8.newGrid(16, 16, self.icons_sheet:getWidth(), self.icons_sheet:getHeight(), 0, 0)
+    self.red_icon = anim8.newAnimation(loaded_sheet('1-1', 1), constants.animation_frame_length)
+    self.green_icon = anim8.newAnimation(loaded_sheet('3-3', 1), constants.animation_frame_length)
+    self.blue_icon = anim8.newAnimation(loaded_sheet('2-2', 1), constants.animation_frame_length)
+    self.red_available = 0
+    self.green_available = 0
+    self.blue_available = 0
 
     if unit.has_doublestr == false then
         table.insert(self.abilities, {
@@ -50,7 +58,8 @@ end
 -- CALLBACKS
 
 function ManaAbilityMenuLayer:draw()
-    local height = constants.unit_menu_height_per_item * (#(self.abilities) + 2) + constants.unit_menu_bottom_padding
+    local top_row_height = 16*4 + 16 * 2
+    local height = top_row_height + constants.unit_menu_height_per_item * (#(self.abilities) + 2) + constants.unit_menu_bottom_padding
     
     -- border
     love.graphics.setColor(constants.ui_border_r, constants.ui_border_g, constants.ui_border_b, 1.0)
@@ -69,11 +78,23 @@ function ManaAbilityMenuLayer:draw()
         height)
 
     -- column header icons
-    -- todo
+    local blue_x = constants.mana_menu_width - 16 - (16 * 4)
+    local green_x = blue_x - 16 - (16 * 4)
+    local red_x = green_x - 16 - (16 * 4)
+    local blue_cost_x = blue_x + 20
+    local green_cost_x = green_x + 20
+    local red_cost_x = red_x + 20
+    self.red_icon:draw(self.icons_sheet, red_x, 32, 0, 4, 4)
+    self.green_icon:draw(self.icons_sheet, green_x, 32, 0, 4, 4)
+    self.blue_icon:draw(self.icons_sheet, blue_x, 32, 0, 4 , 4)
 
     -- available mana
     love.graphics.setFont(constants.big_font)
-
+    love.graphics.setColor(constants.ui_text_r, constants.ui_text_g, constants.ui_text_b, 1.0)
+    love.graphics.print("Redeemable Sacrificed Units", 32, top_row_height)          -- name
+    love.graphics.print(self.red_available, red_cost_x, top_row_height)     -- r cost
+    love.graphics.print(self.green_available, green_cost_x, top_row_height)   -- g cost
+    love.graphics.print(self.blue_available, blue_cost_x, top_row_height)    -- b cost
     -- ability list
     local did_selected = false
     for i = 1, #self.abilities do
@@ -86,13 +107,13 @@ function ManaAbilityMenuLayer:draw()
         if did_selected == true then
             j = j + 1
         end
-        local y = 16 + j * constants.unit_menu_height_per_item
-        love.graphics.print(self.abilities[i].name, 32, y)  -- name
-                                                            -- r cost
-                                                            -- g cost
-                                                            -- b cost
+        local y = top_row_height + j * constants.unit_menu_height_per_item
+        love.graphics.print(self.abilities[i].name, 32, y)          -- name
+        love.graphics.print(self.abilities[i].r_cost, red_cost_x, y)     -- r cost
+        love.graphics.print(self.abilities[i].g_cost, green_cost_x, y)   -- g cost
+        love.graphics.print(self.abilities[i].b_cost, blue_cost_x, y)    -- b cost
         if i == self.selected_index then
-            y = 16 + (i + 1) * constants.unit_menu_height_per_item
+            y = top_row_height + (j + 1) * constants.unit_menu_height_per_item
             love.graphics.setColor(constants.ui_text_r, constants.ui_text_g, constants.ui_text_b, 1.0)
             love.graphics.print(self.abilities[self.selected_index].description, 48, y)
             did_selected = true

@@ -6,6 +6,7 @@ constants = {
     pixel_sprite_height = 48,
     pixel_sprite_foot_offset = 8,
     cursor_move_speed = 0.1,
+    cursor_turbo_speed = 0.05,
     unit_move_speed = 0.3,
     animation_frame_length = 0.2,
     cast_animation_length = 0.5,
@@ -118,7 +119,7 @@ constants = {
     ui_hp_fill_g = .12,
     ui_hp_fill_b = .16,
     
-    ui_hp_empty_r = .73,
-    ui_hp_empty_g = .75,
-    ui_hp_empty_b = .98
+    ui_hp_empty_r = 1,
+    ui_hp_empty_g = 1,
+    ui_hp_empty_b = 1
 }

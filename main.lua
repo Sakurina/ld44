@@ -32,6 +32,7 @@ require("unit_e5")
 
 function love.load()
     love.graphics.setDefaultFilter('nearest', 'nearest')
+    love.keyboard.setKeyRepeat(true)
     layer_manager = LayerManager()
     layer_manager:reload_controls()
     local initial_layer = MenuLayer()

@@ -13,6 +13,7 @@ function SRPGLayer:new()
     self.cursor_tile_target_x = 8
     self.cursor_tile_target_y = 14
     self.cursor_tile_anim_accumulator = 0
+    self.cursor_is_turbo = false
 
     -- map loading and dimensions
     self.map_img_file = 'gfx/map/1-1.png'
@@ -105,12 +106,16 @@ function SRPGLayer:draw()
     lume.each(self.units, "draw")
 
     -- top: draw the cursor
+    local movespeed = constants.cursor_move_speed
+    if self.cursor_is_turbo then
+        movespeed = constants.cursor_turbo_speed
+    end
     local cursor_x = x_for_tile(self.cursor_tile_x)
     local cursor_y = y_for_tile(self.cursor_tile_y)
     local cursor_proj_x = x_for_tile(self.cursor_tile_target_x)
     local cursor_proj_y = y_for_tile(self.cursor_tile_target_y)
     if cursor_x ~= cursor_proj_x or cursor_y ~= cursor_proj_y then
-        local interpolation = self.cursor_tile_anim_accumulator / constants.cursor_move_speed
+        local interpolation = self.cursor_tile_anim_accumulator / movespeed
         cursor_x = lume.lerp(cursor_x, cursor_proj_x, interpolation)
         cursor_y = lume.lerp(cursor_y, cursor_proj_y, interpolation)
     end
@@ -203,11 +208,15 @@ function SRPGLayer:update(dt)
     local cursor_proj_y = y_for_tile(self.cursor_tile_target_y)
 
     if cursor_x ~= cursor_proj_x or cursor_y ~= cursor_proj_y then
+        local movespeed = constants.cursor_move_speed
+        if self.cursor_is_turbo then
+            movespeed = constants.cursor_turbo_speed
+        end
         self.cursor_tile_anim_accumulator = self.cursor_tile_anim_accumulator + dt
-        local interpolation = self.cursor_tile_anim_accumulator / constants.cursor_move_speed
+        local interpolation = self.cursor_tile_anim_accumulator / movespeed
         cursor_x = lume.lerp(cursor_x, cursor_proj_x, interpolation)
         cursor_y = lume.lerp(cursor_y, cursor_proj_y, interpolation)
-        if self.cursor_tile_anim_accumulator > constants.cursor_move_speed then
+        if self.cursor_tile_anim_accumulator > movespeed then
             self.cursor_tile_x = self.cursor_tile_target_x
             self.cursor_tile_y = self.cursor_tile_target_y
             self.cursor_tile_anim_accumulator = 0
@@ -229,15 +238,17 @@ function SRPGLayer:update(dt)
 end
 
 function SRPGLayer:keypressed(key, scancode, isrepeat)
+    self.cursor_is_turbo = isrepeat
     if self.paused == 1 then
         return
     end
     if self.active_mode == 'animation_wait' then
         return
     end
-    if self.cursor_tile_anim_accumulator ~= 0 then
+    if self.cursor_tile_x ~= self.cursor_tile_target_x or self.cursor_tile_y ~= self.cursor_tile_target_y then
         return
     end
+    
 
     if key == layer_manager.controls["Up"] then
         self.cursor_tile_target_y = self.cursor_tile_target_y - 1
@@ -282,6 +293,7 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
 end
 
 function SRPGLayer:keyreleased(key, scancode)
+    self.cursor_is_turbo = false
     return
 end
 
@@ -337,6 +349,9 @@ function SRPGLayer:confirm_pressed_overview()
         elseif menu_option == 'Special' then
             layer_manager:remove_first()
             local mana_menu = ManaAbilityMenuLayer(that.selected_unit, mana_callback)
+            mana_menu.red_available = that.player_red_mana
+            mana_menu.green_available = that.player_green_mana
+            mana_menu.blue_available = that.player_blue_mana
             layer_manager:prepend(mana_menu)
         end
         
