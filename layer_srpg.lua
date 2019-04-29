@@ -353,6 +353,8 @@ function SRPGLayer:confirm_pressed_overview()
             mana_menu.green_available = that.player_green_mana
             mana_menu.blue_available = that.player_blue_mana
             layer_manager:prepend(mana_menu)
+        elseif menu_option == nil then
+            layer_manager:remove_first()
         end
         
     end
