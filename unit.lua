@@ -47,10 +47,11 @@ function Unit:new(tile_x, tile_y)
         constants.animation_frame_length,
         function(l)
             if self.hitspark_animation_callback ~= nil then
-                self.hitspark_animation_callback()
+                local cb = self.hitspark_animation_callback
                 self.hitspark_animation_callback = nil
                 self.hitspark_animation:pauseAtStart()
                 self.show_hitspark_animation = false
+                cb()
             end
         end)
     self.hitspark_animation:pauseAtStart()

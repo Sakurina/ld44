@@ -477,10 +477,19 @@ function SRPGLayer:combat_phase_atk_receive(attacker, defender)
     attacker.active_animation = 'walk_animation'
     that.selection_intention = 'stall'
     defender:enter_damage_animation(function()
-        defender.active_animation = 'walk_animation'
-        that.hover_ui:animate_to(defender.hp, function()
-            that.selection_intention = 'attack3'
-        end)
+        if attacker.has_doublestr == true then
+            defender:enter_damage_animation(function()
+                defender.active_animation = 'walk_animation'
+                that.hover_ui:animate_to(defender.hp, function()
+                    that.selection_intention = 'attack3'
+                end)
+            end)
+        else
+            defender.active_animation = 'walk_animation'
+            that.hover_ui:animate_to(defender.hp, function()
+                that.selection_intention = 'attack3'
+            end)
+        end
     end)
     if defender.has_reflect then
         attacker:enter_damage_animation(function() end)
