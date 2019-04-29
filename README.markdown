@@ -29,3 +29,4 @@ The usual license boilerplate can be found in *LICENSE.markdown*.
 [jsonlua]: https://github.com/rxi/json.lua
 [tesound]: https://love2d.org/wiki/TEsound
 [m5x7]: https://managore.itch.io/m5x7
+[jumper]: https://github.com/Yonaba/Jumper
