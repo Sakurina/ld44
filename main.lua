@@ -38,7 +38,7 @@ function love.load()
     layer_manager:reload_controls()
     local initial_layer = MenuLayer()
     layer_manager:prepend(initial_layer)
-    --TEsound.playLooping("music/Lazy Marine - Piracy Beat.wav", 'music')
+    TEsound.playLooping("music/Lazy Marine - Piracy Beat.wav", 'music')
 end
 
 function love.draw()
