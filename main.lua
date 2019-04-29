@@ -3,6 +3,7 @@ lovebird = require "deps/lovebird"
 Object = require "deps/classic"
 json = require "deps/json"
 anim8 = require "deps/anim8"
+require("deps/tesound")
 require('deps/camera')
 require("helpers")
 require("layer")
@@ -37,6 +38,7 @@ function love.load()
     layer_manager:reload_controls()
     local initial_layer = MenuLayer()
     layer_manager:prepend(initial_layer)
+    TEsound.playLooping("music/Lazy Marine - Piracy Beat.wav", 'music')
 end
 
 function love.draw()
@@ -46,6 +48,7 @@ end
 function love.update(dt)
     lovebird.update()
     layer_manager:update(dt)
+    TEsound.cleanup()
 end
 
 function love.keypressed(key, scancode, isrepeat)
