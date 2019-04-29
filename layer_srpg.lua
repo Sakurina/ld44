@@ -545,7 +545,7 @@ function SRPGLayer:combat_phase_ret_receive(attacker, defender)
     that.selection_intention = 'stall'
     attacker:enter_damage_animation(function()
         attacker.active_animation = 'walk_animation'
-        that.hover_ui:animate_to(defender.hp, function()
+        that.hover_ui:animate_to(attacker.hp, function()
             that.selection_intention = 'attack7'
         end)
     end)
@@ -637,8 +637,12 @@ function SRPGLayer:populate_hover_ui()
         local u = units[1]
         self.hover_ui.show_ui = true
         self.hover_ui.max_hp = u.max_hp
-        self.hover_ui.from_hp = u.hp
-        self.hover_ui.to_hp = u.hp
+        local hp = u.hp
+        if hp < 0 then
+            hp = 0
+        end
+        self.hover_ui.from_hp = hp
+        self.hover_ui.to_hp = hp
         self.hover_ui.atk = u.atk
         self.hover_ui.def = u.def
         self.hover_ui.unit_name = u.unit_name

@@ -114,6 +114,9 @@ function HoverUILayer:keyreleased(key, scancode)
 end
 
 function HoverUILayer:animate_to(hp, callback)
+    if hp < 0 then
+        hp = 0
+    end
     self.to_hp = hp
     self.did_pause_complete = false
     self.hp_animation_callback = callback
