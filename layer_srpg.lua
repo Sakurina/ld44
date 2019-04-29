@@ -452,6 +452,7 @@ function SRPGLayer:combat_phase_atk_cast(attacker, defender)
     -- Attacker casts spell
     local that = self
     attacker:enter_cast_animation(function() 
+        attacker.active_animation = 'walk_animation'
         that.selection_intention = 'attack2' 
     end)
 end
@@ -502,6 +503,7 @@ function SRPGLayer:combat_phase_ret_cast(attacker, defender)
     -- Defender casts spell
     local that = self
     defender:enter_cast_animation(function() 
+        defender.active_animation = 'walk_animation'
         that.selection_intention = 'attack6' 
     end)
 end
@@ -511,11 +513,10 @@ function SRPGLayer:combat_phase_ret_receive(attacker, defender)
     -- Attacker receives damage, defender returns to normal
     that.selection_intention = 'stall'
     attacker:enter_damage_animation(function()
-        --attacker.active_animation = 'walk_animation'
+        attacker.active_animation = 'walk_animation'
         that.hover_ui:animate_to(defender.hp, function()
             that.selection_intention = 'attack7'
         end)
-        --that:animate_hp_hit(defender.hp)
     end)
 end
 
@@ -524,7 +525,6 @@ function SRPGLayer:combat_phase_post_ret(attacker, defender)
         attacker.purge = true
         self:combat_phase_ended(attacker, defender)
     else
-        attacker.active_animation = 'walk_animation'
         self.selection_intention = 'attack7.5'
     end
 end
