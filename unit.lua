@@ -7,7 +7,12 @@ function Unit:new(tile_x, tile_y)
     self.purge = false
     
     -- Sprite
-    self.sprite_sheet = nil 
+    self.sprite_sheet = nil
+    self.sacrifice_fx_sheet = love.graphics.newImage('gfx/fx/sacrifice.png')
+    local loaded_sacrifice_grid = anim8.newGrid(48, 48, self.sacrifice_fx_sheet:getWidth(), self.sacrifice_fx_sheet:getHeight(), 0, 0)
+    self.hitspark_fx_sheet = love.graphics.newImage('gfx/fx/hitspark.png')
+    local loaded_hitspark_grid = anim8.newGrid(48, 48, self.hitspark_fx_sheet:getWidth(), self.hitspark_fx_sheet:getHeight(), 0, 0)
+    
     self.active_animation = 'walk_animation'
     self.has_feet = false
     self.mana_color = 'none'
@@ -19,6 +24,33 @@ function Unit:new(tile_x, tile_y)
     self.damage_animation_callback = nil
     self.cast_animation_accumulator = 0
     self.damage_animation_accumulator = 0
+    self.show_sacrifice_animation = false
+
+    self.sacrifice_animation = anim8.newAnimation(loaded_sacrifice_grid('1-5', 1), 
+        constants.animation_frame_length,
+        function(l)
+            if self.sacrifice_animation_callback ~= nil then
+                self.sacrifice_animation_callback()
+                self.sacrifice_animation_callback = nil
+                self.sacrifice_animation:pauseAtStart()
+                self.show_sacrifice_animation = false
+                self.active_animation = 'walk_animation'
+            end
+        end)
+    self.sacrifice_animation_callback = nil
+
+    self.hitspark_animation = anim8.newAnimation(loaded_hitspark_grid('1-5', 1), 
+        constants.animation_frame_length,
+        function(l)
+            if self.hitspark_animation_callback ~= nil then
+                self.hitspark_animation_callback()
+                self.hitspark_animation_callback = nil
+                self.hitspark_animation:pauseAtStart()
+                self.show_hitspark_animation = false
+                self.active_animation = 'walk_animation'
+            end
+        end)
+    self.hitspark_animation_callback = nil
 
     -- Movement
     self.move_range = 0
@@ -62,13 +94,13 @@ function Unit:update(dt)
             self.cast_animation_callback()
             self.cast_animation_callback = nil
         end
-    elseif self.active_animation == 'damage_animation' and self.damage_animation_callback ~= nil then
-        self.damage_animation_accumulator = self.damage_animation_accumulator + dt
-        if self.damage_animation_accumulator >= constants.damage_animation_length then
-            self.cast_animation_accumulator = 0
-            self.damage_animation_callback()
-            self.damage_animation_callback = nil
-        end
+    end
+
+    if self.show_sacrifice_animation == true then
+        self.sacrifice_animation:update(dt)
+    end
+    if self.show_hitspark_animation == true then
+        self.hitspark_animation:update(dt)
     end
 
     if self.processing_move_queue == true then
@@ -100,6 +132,14 @@ function Unit:draw()
         love.graphics.setColor(1, 1, 1, 1)
     end
     self[self.active_animation]:draw(self.sprite_sheet, self.pixel_x, self.pixel_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
+    
+    love.graphics.setColor(1, 1, 1, 1)
+    if self.show_sacrifice_animation == true then
+        self.sacrifice_animation:draw(self.sacrifice_fx_sheet, self.pixel_x, self.pixel_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
+    end
+    if self.show_hitspark_animation == true then
+        self.hitspark_animation:draw(self.hitspark_fx_sheet, self.pixel_x, self.pixel_y, 0, constants.pixel_integer_scale, constants.pixel_integer_scale)
+    end
 end
 
 function Unit:queue_move(x, y)
@@ -148,6 +188,15 @@ function Unit:enter_cast_animation(callback)
 end
 
 function Unit:enter_damage_animation(callback)
-    self.damage_animation_callback = callback
     self.active_animation = 'damage_animation'
+    self.show_hitspark_animation = true
+    self.hitspark_animation_callback = callback
+    self.hitspark_animation:resume()
+end
+
+function Unit:enter_sacrifice_animation(callback)
+    self.active_animation = 'damage_animation'
+    self.show_sacrifice_animation = true
+    self.sacrifice_animation_callback = callback
+    self.sacrifice_animation:resume()
 end

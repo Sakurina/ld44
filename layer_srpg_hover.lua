@@ -13,6 +13,8 @@ function HoverUILayer:new()
     self.unit_name = "(no selection)"
     self.show_ui = false
     self.animation_length = constants.hover_ui_hpbar_speed
+    self.pause_length = 0.3
+    self.did_pause_complete = true
 end
 
 -- CALLBACKS
@@ -48,6 +50,9 @@ function HoverUILayer:draw()
     local display_hp = self.from_hp
     if self.from_hp ~= self.to_hp then
         local interpolation = self.counter / self.animation_length
+        if interpolation > 1 then
+            interpolation = 1
+        end
         display_hp = lume.smooth(self.from_hp, self.to_hp, interpolation)
     end
     local fill_fraction = display_hp / self.max_hp
@@ -84,14 +89,20 @@ function HoverUILayer:draw()
 end
 
 function HoverUILayer:update(dt)
-    if self.from_hp ~= self.to_hp then
+    if self.from_hp ~= self.to_hp or not self.did_pause_complete then
         self.counter = self.counter + dt
     end
     if self.counter >= self.animation_length then
         self.from_hp = self.to_hp
-        self.counter = 0
     end
-    return
+    if self.counter >= self.animation_length + self.pause_length then
+        self.did_pause_complete = true
+        self.counter = 0
+        if self.hp_animation_callback ~= nil then
+            self.hp_animation_callback()
+            self.hp_animation_callback = nil
+        end
+    end
 end
 
 function HoverUILayer:keypressed(key, scancode, isrepeat)
@@ -100,4 +111,10 @@ end
 
 function HoverUILayer:keyreleased(key, scancode)
     return
+end
+
+function HoverUILayer:animate_to(hp, callback)
+    self.to_hp = hp
+    self.did_pause_complete = false
+    self.hp_animation_callback = callback
 end
