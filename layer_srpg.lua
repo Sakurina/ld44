@@ -152,7 +152,7 @@ function SRPGLayer:update(dt)
         if self.hover_ui ~= nil then
             layer_manager:remove_first()
         end
-        local win_layer = WinLayer()
+        local win_layer = EndingPromptLayer()
         layer_manager:transition(self, win_layer)
         return
     end
@@ -162,7 +162,7 @@ function SRPGLayer:update(dt)
         if self.hover_ui ~= nil then
             layer_manager:remove_first()
         end
-        local lose_layer = WinLayer()
+        local lose_layer = EndingPromptLayer()
         layer_manager:transition(self, lose_layer)
         return
     end
@@ -286,14 +286,12 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         elseif self.active_mode == 'selection' and self.selection_intention == 'attack' then
             self:confirm_user_attack_selection()
         end
-    elseif not keyrepeat and key == 'l' then
-        log(lume.format("[{1}] x = {2}, y = {3}", { self.layer_name, self.cursor_tile_x, self.cursor_tile_y }))
-    elseif not keyrepeat and key == 'm' then
-        self:mana_report()
-    elseif not keyrepeat and key == 'f' then
-        self.player_red_mana = 9
-        self.player_green_mana = 9
-        self.player_blue_mana = 9
+    --elseif not keyrepeat and key == 'l' then
+        --log(lume.format("[{1}] x = {2}, y = {3}", { self.layer_name, self.cursor_tile_x, --self.cursor_tile_y }))
+    --elseif not keyrepeat and key == 'f' then
+        --self.player_red_mana = 9
+        --self.player_green_mana = 9
+        --self.player_blue_mana = 9
     end
 
     self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)
@@ -304,10 +302,6 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
             self.cursor_tile_target_x = self.cursor_tile_x
             self.cursor_tile_target_y = self.cursor_tile_y
         end
-    
-        --if self.selected_unit ~= nil and (self.cursor_tile_x ~= self.cursor_tile_target_x or self.cursor_tile_y ~= self.cursor_tile_target_y) then
-            --self.selected_unit:queue_move(self.cursor_tile_target_x, self.cursor_tile_target_y)
-        --end
     end
     
 end
