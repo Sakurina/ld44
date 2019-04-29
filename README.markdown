@@ -8,11 +8,12 @@ This is an as of yet unnamed [Ludum Dare 44][ld] game by [Sakurina][skrn] and [w
 
 * [LÖVE][love], a Lua-based multiplatform 2D game framework.
 * [anim8][anim8] for sprite animations.
+* [TEsound][tesound] for easy sound management.
+* [Jumper][jumper] for grid-based pathfinding for enemies.
+* [classic][classic] for easy class creation.
 * [Lovebird][lovebird] for sane debugging.
 * [Lume][lume] for lots of useful helper functions.
-* [classic][classic] for easy class creation.
 * [json.lua][jsonlua] for data serialization/deserialization.
-* [TEsound][tesound] for easy sound management.
 * [m5x7][m5x7] as the UI font.
 
 The usual license boilerplate can be found in *LICENSE.markdown*.

@@ -281,7 +281,7 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         if self.active_mode == 'overview' then
             self:confirm_pressed_overview()
         elseif self.active_mode == 'selection' and self.selection_intention == 'move' then
-            self:confirm_move_selection()
+            self:confirm_player_move_selection()
         elseif self.active_mode == 'selection' and self.selection_intention == 'attack' then
             self:confirm_user_attack_selection()
         end
@@ -303,9 +303,10 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
             self.cursor_tile_target_x = self.cursor_tile_x
             self.cursor_tile_target_y = self.cursor_tile_y
         end
-        if self.selected_unit ~= nil and (self.cursor_tile_x ~= self.cursor_tile_target_x or self.cursor_tile_y ~= self.cursor_tile_target_y) then
-            self.selected_unit:queue_move(self.cursor_tile_target_x, self.cursor_tile_target_y)
-        end
+    
+        --if self.selected_unit ~= nil and (self.cursor_tile_x ~= self.cursor_tile_target_x or self.cursor_tile_y ~= self.cursor_tile_target_y) then
+            --self.selected_unit:queue_move(self.cursor_tile_target_x, self.cursor_tile_target_y)
+        --end
     end
     
 end
@@ -396,6 +397,15 @@ function SRPGLayer:confirm_pressed_overview()
         unit_menu = UnitSelectMenuLayer('blank_tile', menu_callback)
     end
     layer_manager:prepend(unit_menu)
+end
+
+function SRPGLayer:confirm_player_move_selection()
+    local unit = self.selected_unit
+    local allowed_tiles = self:viable_move_tiles(unit)
+    local pt = { x = self.cursor_tile_x, y = self.cursor_tile_y }
+    local queue = path_for_point_in_allowed_tiles(unit, pt, allowed_tiles)
+    lume.each(queue, function(q) unit:queue_move(q.x, q.y) end)
+    self:confirm_move_selection()
 end
 
 function SRPGLayer:confirm_move_selection()
@@ -691,11 +701,24 @@ function SRPGLayer:enemy_turn_loop()
             destinations = lume.sort(destinations, function(a, b)
                 return lume.distance(target_result.target.tile_x, target_result.target.tile_y, a.x, a.y) < lume.distance(target_result.target.tile_x, target_result.target.tile_y, b.x, b.y)
             end)
-            local destination = lume.first(destinations)
+            local attempt = 1
+            local destination = destinations[attempt]
+            local queue = path_for_point_in_allowed_tiles(unit, destination, destinations)
+            while queue == nil and attempt ~= #destinations do
+                if attempt ~= destinations then
+                    attempt = attempt + 1
+                    destination = destinations[attempt]
+                    queue = path_for_point_in_allowed_tiles(unit, destination, destinations)
+                else
+                    unit.moved_this_turn = true
+                    return
+                end
+            end
             if self:wait_until_cursor_moved_to_point(destination.x, destination.y, 'focus_enemy') == true then
                 return
             end
-            unit:queue_move(destination.x, destination.y)
+            
+            lume.each(queue, function(q) unit:queue_move(q.x, q.y) end)
             self.selected_unit = unit
             self.selection_intention = 'move'
             self:confirm_move_selection()

@@ -79,3 +79,62 @@ function enemy_ai_target(attacker, attack_tiles, player_units)
 
     return { target = target, type = type }
 end
+
+function map_for_allowed_tiles(unit, allowed_tiles)
+    local dimension = (unit.move_range * 2) + 1
+    local player_xy = unit.move_range + 1
+    local map = {}
+    for row_num=1, dimension, 1 do
+        local row = {}
+        for col_num = 1, dimension, 1 do
+            local col = 1
+            table.insert(row, col)
+        end
+        table.insert(map, row)
+    end
+
+    map[player_xy][player_xy] = 0
+    lume.each(allowed_tiles, function(tile)
+        local relative_x = tile.x - unit.tile_x
+        local relative_y = tile.y - unit.tile_y
+        local map_x = player_xy + relative_x
+        local map_y = player_xy + relative_y
+        map[map_y][map_x] = 0
+    end)
+
+    return map
+end
+
+function path_nodes_to_move_queue(unit, path)
+    if path == nil then
+        return nil
+    end
+    local queue = {}
+    local player_xy = unit.move_range + 1
+    for node, count in path:nodes() do
+        local relative_x = node:getX() - player_xy
+        local relative_y = node:getY() - player_xy
+        local abs_x = relative_x + unit.tile_x
+        local abs_y = relative_y + unit.tile_y
+        table.insert(queue, { x = abs_x, y = abs_y })
+    end
+    return queue
+end
+
+function path_for_point_in_allowed_tiles(unit, point, allowed_tiles)
+    local Grid = require('deps/jumper.grid')
+    local Pathfinder = require('deps/jumper.pathfinder')
+
+    local map = map_for_allowed_tiles(unit, allowed_tiles)
+
+    local grid = Grid(map)
+    local finder = Pathfinder(grid, 'JPS', 0)
+    finder:setMode('ORTHOGONAL')
+    local origin_x, origin_y = unit.move_range + 1, unit.move_range + 1
+    local relative_target_x = point.x - unit.tile_x
+    local relative_target_y = point.y - unit.tile_y
+    local target_x, target_y = origin_x + relative_target_x, origin_y + relative_target_y
+    local path = finder:getPath(origin_x, origin_y, target_x, target_y)
+
+    return path_nodes_to_move_queue(unit, path)
+end
