@@ -14,6 +14,7 @@ function SRPGLayer:new()
     self.cursor_tile_target_y = 14
     self.cursor_tile_anim_accumulator = 0
     self.cursor_is_turbo = false
+    self.cursor_img = love.graphics.newImage('gfx/gui/pointer.png')
 
     -- map loading and dimensions
     self.map_img_file = 'gfx/map/1-1.png'
@@ -120,8 +121,9 @@ function SRPGLayer:draw()
             cursor_x = lume.lerp(cursor_x, cursor_proj_x, interpolation)
             cursor_y = lume.lerp(cursor_y, cursor_proj_y, interpolation)
         end
-        love.graphics.setColor(0, 0, 1, 0.5)
-        love.graphics.rectangle('fill', cursor_x, cursor_y, tile_width_px, tile_height_px)
+        local cursor_draw_x = cursor_x + (3*4)
+        local cursor_draw_y = cursor_y - (12*4)
+        love.graphics.draw(self.cursor_img, cursor_draw_x, cursor_draw_y, 0, 4, 4)
     end
     
     camera:unset()
@@ -258,7 +260,6 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         return
     end
     
-
     if key == layer_manager.controls["Up"] then
         self.cursor_tile_target_y = self.cursor_tile_target_y - 1
     elseif key == layer_manager.controls["Down"] then
