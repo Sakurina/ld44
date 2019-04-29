@@ -183,6 +183,8 @@ function SRPGLayer:update(dt)
             end
         elseif self.selection_intention == 'focus_enemy' then
             self:enemy_turn_loop()
+        elseif self.selection_intention == 'focus_player' then
+            self:start_player_turn()
         elseif self.selection_intention == 'attack' then
             self:combat_phase_atk_cast(self.selected_unit, self.target_unit)
         elseif self.selection_intention == 'attack2' then
@@ -558,6 +560,20 @@ function SRPGLayer:viable_move_tiles(unit)
     return filtered_tiles
 end
 
+function SRPGLayer:start_player_turn()
+    self.active_mode = 'animation_wait'
+    -- move camera to first player unit on start of turn
+    local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
+    local unit = lume.first(player_units)
+    if self:wait_until_cursor_moved_to_point(unit.tile_x, unit.tile_y, true) == true then
+        return
+    end
+    -- once move complete, reset state and switch to overview mode
+    self:reset_player_turn()
+    self.active_mode = 'overview'
+
+end
+
 function SRPGLayer:reset_player_turn()
     local player_units = lume.filter(self.units, function(u) return u.user_controlled == true end)
     lume.each(player_units, function(u) u.moved_this_turn = false end)
@@ -592,11 +608,15 @@ function SRPGLayer:start_enemy_turn()
     self:enemy_turn_loop()
 end
 
-function SRPGLayer:wait_until_cursor_moved_to_point(x, y)
+function SRPGLayer:wait_until_cursor_moved_to_point(x, y, user_controlled)
+    local intention = 'focus_enemy'
+    if user_controlled == true then
+        intention = 'focus_player'
+    end
     if self.cursor_tile_x ~= x or self.cursor_tile_y ~= y then
         self.cursor_tile_target_x = x
         self.cursor_tile_target_y = y
-        self.selection_intention = 'focus_enemy'
+        self.selection_intention = intention
         return true
     end
     return false
@@ -605,8 +625,7 @@ end
 function SRPGLayer:enemy_turn_loop()
     local remaining_move_units = lume.filter(self.units, function(u) return u.purge == false and u.user_controlled == false and u.moved_this_turn == false end)
     if #remaining_move_units <= 0 then
-        self:reset_player_turn()
-        self.active_mode = 'overview'
+        self:start_player_turn()
     else
         local unit = lume.first(remaining_move_units)
         local destinations = self:viable_move_tiles(unit)
@@ -619,7 +638,7 @@ function SRPGLayer:enemy_turn_loop()
                 return lume.distance(target_result.target.tile_x, target_result.target.tile_y, a.x, a.y) < lume.distance(target_result.target.tile_x, target_result.target.tile_y, b.x, b.y)
             end)
             local destination = lume.first(destinations)
-            if self:wait_until_cursor_moved_to_point(destination.x, destination.y) == true then
+            if self:wait_until_cursor_moved_to_point(destination.x, destination.y, false) == true then
                 return
             end
             unit:queue_move(destination.x, destination.y)
@@ -627,7 +646,7 @@ function SRPGLayer:enemy_turn_loop()
             self.selection_intention = 'move'
             self:confirm_move_selection()
         else
-            if self:wait_until_cursor_moved_to_point(unit.tile_x, unit.tile_y) == true then
+            if self:wait_until_cursor_moved_to_point(unit.tile_x, unit.tile_y, false) == true then
                 return
             end
             self:confirm_attack_selection(unit, target_result.target) 
