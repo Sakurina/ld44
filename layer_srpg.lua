@@ -57,6 +57,14 @@ function SRPGLayer:new()
     table.insert(self.units, E4Unit(38,10))
     table.insert(self.units, E5Unit(40,10))
     table.insert(self.units, E4Unit(42,10))
+    table.insert(self.units, E3Unit(28,11))
+    table.insert(self.units, E4Unit(30,11))
+    table.insert(self.units, E5Unit(32,11))
+    table.insert(self.units, E4Unit(34,11))
+    table.insert(self.units, E3Unit(36,11))
+    table.insert(self.units, E4Unit(38,11))
+    table.insert(self.units, E5Unit(40,11))
+    table.insert(self.units, E4Unit(42,11))
     table.insert(self.units, U3Unit(28,17))
     table.insert(self.units, U2Unit(30,17))
     table.insert(self.units, U1Unit(32,17))
@@ -701,27 +709,33 @@ function SRPGLayer:enemy_turn_loop()
             destinations = lume.sort(destinations, function(a, b)
                 return lume.distance(target_result.target.tile_x, target_result.target.tile_y, a.x, a.y) < lume.distance(target_result.target.tile_x, target_result.target.tile_y, b.x, b.y)
             end)
-            local attempt = 1
-            local destination = destinations[attempt]
-            local queue = path_for_point_in_allowed_tiles(unit, destination, destinations)
-            while queue == nil and attempt ~= #destinations do
-                if attempt ~= destinations then
-                    attempt = attempt + 1
-                    destination = destinations[attempt]
-                    queue = path_for_point_in_allowed_tiles(unit, destination, destinations)
-                else
-                    unit.moved_this_turn = true
+            if #destinations > 0 then
+                local attempt = 1
+                local destination = destinations[attempt]
+                local queue = path_for_point_in_allowed_tiles(unit, destination, destinations)
+                while queue == nil and attempt ~= #destinations do
+                    if attempt ~= destinations then
+                        attempt = attempt + 1
+                        destination = destinations[attempt]
+                        queue = path_for_point_in_allowed_tiles(unit, destination, destinations)
+                    else
+                        unit.moved_this_turn = true
+                        return
+                    end
+                end
+                if self:wait_until_cursor_moved_to_point(destination.x, destination.y, 'focus_enemy') == true then
                     return
                 end
-            end
-            if self:wait_until_cursor_moved_to_point(destination.x, destination.y, 'focus_enemy') == true then
-                return
+                
+                lume.each(queue, function(q) unit:queue_move(q.x, q.y) end)
+                self.selected_unit = unit
+                self.selection_intention = 'move'
+                self:confirm_move_selection()
+            else
+                unit.moved_this_turn = true
+                self:confirm_move_selection()
             end
             
-            lume.each(queue, function(q) unit:queue_move(q.x, q.y) end)
-            self.selected_unit = unit
-            self.selection_intention = 'move'
-            self:confirm_move_selection()
         else
             if self:wait_until_cursor_moved_to_point(unit.tile_x, unit.tile_y, 'focus_enemy') == true then
                 return
