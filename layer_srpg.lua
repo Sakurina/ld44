@@ -694,6 +694,10 @@ function SRPGLayer:enemy_turn_loop()
         local target_result = enemy_ai_target(unit, attacks, player_units)
         if target_result.type == 'get_closer' then
             -- move then combat if possible
+            if target_result.target == nil then
+                unit.moved_this_turn = true
+                return
+            end
             destinations = lume.sort(destinations, function(a, b)
                 return lume.distance(target_result.target.tile_x, target_result.target.tile_y, a.x, a.y) < lume.distance(target_result.target.tile_x, target_result.target.tile_y, b.x, b.y)
             end)
