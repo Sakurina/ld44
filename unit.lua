@@ -15,6 +15,7 @@ function Unit:new(tile_x, tile_y)
     
     self.active_animation = 'walk_animation'
     self.has_feet = false
+    self.facing_left = false
     self.mana_color = 'none'
     
     self.walk_animation = nil
@@ -79,6 +80,19 @@ end
 
 -- UPDATE RUN LOOP
 function Unit:update(dt)
+    if self.tile_target_x < self.tile_x then
+        self.facing_left = true
+    elseif self.tile_target_x > self.tile_x then
+        self.facing_left = false
+    end
+
+    if self[self.active_animation].flippedH == not self.facing_left then
+        self[self.active_animation]:flipH()
+    end
+    if self.hitspark_animation.flippedH == not self.facing_left then
+        self.hitspark_animation:flipH()
+    end
+
     if self.tile_x ~= self.tile_target_x or self.tile_y ~= self.tile_target_y then
         self.tile_move_accumulator = self.tile_move_accumulator + dt
     end
@@ -122,6 +136,7 @@ function Unit:update(dt)
     local interpolation = self.tile_move_accumulator / constants.unit_move_speed
     self.pixel_x = lume.lerp(pixel_x, pixel_proj_x, interpolation)
     self.pixel_y = lume.lerp(pixel_y, pixel_proj_y, interpolation)
+    
     self.walk_animation:update(dt)
 end
 

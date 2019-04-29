@@ -447,6 +447,16 @@ function SRPGLayer:combat_phase_initial_damage(attacker, defender)
     log(lume.format("[{1}] {2} deals {4} damage to {3}", { self.layer_name, attacker.unit_name, defender.unit_name, damage }))
     defender.hp = defender.hp - damage
     
+    if attacker.tile_x < defender.tile_x then
+        attacker.facing_left = false
+        defender.facing_left = true
+    elseif defender.tile_x < attacker.tile_x then
+        attacker.facing_left = true
+        defender.facing_left = false
+    else
+        attacker.facing_left = false
+        defender.facing_left = false
+    end
 end
 
 function SRPGLayer:combat_phase_atk_cast(attacker, defender)
