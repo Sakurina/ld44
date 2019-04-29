@@ -10,6 +10,7 @@ end
 -- CALLBACKS
 
 function ControlsLayer:draw()
+    love.graphics.setFont(constants.big_font)
     love.graphics.setColor(constants.ui_bg_r, constants.ui_bg_g, constants.ui_bg_b, 1.0)
     love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
 
@@ -18,11 +19,11 @@ function ControlsLayer:draw()
         if i == self.selected_index then
             love.graphics.setColor(constants.ui_em_r, constants.ui_em_g, constants.ui_em_b, 1.0)
         else
-            love.graphics.setColor(constants.ui_deem_r, constants.ui_deem.g, constants.ui_deem_b, 1.0)
+            love.graphics.setColor(constants.ui_deem_r, constants.ui_deem_g, constants.ui_deem_b, 1.0)
         end
-        local y = 10 + i * 35
-        love.graphics.print(k, 10, y)
-        love.graphics.print(v, 100, y)
+        local y = 136 + i * constants.unit_menu_height_per_item
+        love.graphics.print(k, 450, y)
+        love.graphics.print(v, 674, y)
         i = i + 1
     end
 end

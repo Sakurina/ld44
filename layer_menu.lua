@@ -8,8 +8,9 @@ function MenuLayer:new()
 end
 
 -- CALLBACKS
-
+-- 195x162
 function MenuLayer:draw()
+    love.graphics.setFont(constants.big_font)
     love.graphics.setColor(constants.ui_bg_r, constants.ui_bg_g, constants.ui_bg_b, 1.0)
     love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
     for i = 1, #self.items do
@@ -18,8 +19,8 @@ function MenuLayer:draw()
         else
             love.graphics.setColor(constants.ui_deem_r, constants.ui_deem_g, constants.ui_deem_b, 1.0)
         end
-        local y = 10 + i * 35
-        love.graphics.print(self.items[i], 10, y)
+        local y = 223 + i * constants.unit_menu_height_per_item
+        love.graphics.print(self.items[i], 543, y)
     end
 end
 
