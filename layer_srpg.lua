@@ -152,8 +152,8 @@ function SRPGLayer:update(dt)
         if self.hover_ui ~= nil then
             layer_manager:remove_first()
         end
-        local win_layer = EndingPromptLayer()
-        layer_manager:transition(self, win_layer)
+        local lose_layer = MenuLayer()
+        layer_manager:transition(self, lose_layer)
         return
     end
     if #enemy_units <= 0 then
@@ -162,8 +162,8 @@ function SRPGLayer:update(dt)
         if self.hover_ui ~= nil then
             layer_manager:remove_first()
         end
-        local lose_layer = EndingPromptLayer()
-        layer_manager:transition(self, lose_layer)
+        local win_layer = EndingPromptLayer()
+        layer_manager:prepend(win_layer)
         return
     end
     if self.active_mode == 'animation_wait' then
@@ -286,12 +286,6 @@ function SRPGLayer:keypressed(key, scancode, isrepeat)
         elseif self.active_mode == 'selection' and self.selection_intention == 'attack' then
             self:confirm_user_attack_selection()
         end
-    --elseif not keyrepeat and key == 'l' then
-        --log(lume.format("[{1}] x = {2}, y = {3}", { self.layer_name, self.cursor_tile_x, --self.cursor_tile_y }))
-    --elseif not keyrepeat and key == 'f' then
-        --self.player_red_mana = 9
-        --self.player_green_mana = 9
-        --self.player_blue_mana = 9
     end
 
     self.cursor_tile_target_x = lume.clamp(self.cursor_tile_target_x, 0, self.tile_width_count - 1)

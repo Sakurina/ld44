@@ -122,5 +122,9 @@ constants = {
     
     ui_hp_empty_r = 1,
     ui_hp_empty_g = 1,
-    ui_hp_empty_b = 1
+    ui_hp_empty_b = 1,
+
+    end_bg_r = .23,
+    end_bg_g = .09,
+    end_bg_b = .16
 }

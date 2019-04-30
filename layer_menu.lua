@@ -42,6 +42,9 @@ function MenuLayer:keypressed(key, scancode, isrepeat)
         self:next_item()
     elseif key == layer_manager.controls["Confirm"] then
         self:select_item()
+    elseif key == 'p' then
+        local layer = EndingPromptLayer()
+        layer_manager:prepend(layer)
     end
 end
 
